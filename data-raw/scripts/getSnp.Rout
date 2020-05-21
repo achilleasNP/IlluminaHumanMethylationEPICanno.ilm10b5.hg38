@@ -1,0 +1,1672 @@
+
+R version 3.6.2 (2019-12-12) -- "Dark and Stormy Night"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> processUCSCsnp <- function(snpfile) {
++     require(GenomicRanges)
++     cat("Reading file\n")
++     df <- read.delim(gzfile(snpfile), header = FALSE,
++                      stringsAsFactors = FALSE)
++     names(df) <- c("chr", "start", "end", "name", "strand",
++                    "refNCBI", "class", "alleleFreqs")
++     print(table(df$chr))
++     cat("Only keeping chrs 1-22, X, Y\n")
++     df <- df[df$chr %in% paste0("chr", c(1:22, "X", "Y")),]
++     print(table(df$class))
++     cat("Only keeping class 'single'\n")
++     df <- df[df$class == "single",]
++     cat("Computing MAF\n")
++     df$alleleFreqs <- sub(",$", "", df$alleleFreqs)
++     sp <- strsplit(df$alleleFreqs, ",")
++     minFreq <- sapply(sp, function(xx) min(as.numeric(xx)))
++     cat("Instantiating object\n")
++     grSNP <- GRanges(seqnames = df$chr, strand = df$strand,
++                      ranges = IRanges(start = df$start + 1, end = df$end),
++                      MAF = minFreq, ref = df$refNCBI)
++     names(grSNP) <- df$name
++     grSNP
++ }
+> 
+> for (file in list.files("files", pattern="*_small.txt.gz")){
++     objname <- paste0("gr",
++ 		      gsub("^s", "S", unlist(strsplit(file, "_"))[[1]]),
++ 		      "Single")
++     file <- file.path("files",file)
++     assign(objname, processUCSCsnp(file))
++     outfile <- file.path("objects", paste(objname, "rda", sep="."))
++     save(list=c(objname), file = outfile)
++ 	
++ }
+Loading required package: GenomicRanges
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:base’:
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomeInfoDb
+Reading file
+
+                   chr1     chr1_GL383518v1_alt     chr1_GL383519v1_alt 
+                1037340                     479                     246 
+    chr1_GL383520v2_alt  chr1_KI270706v1_random  chr1_KI270708v1_random 
+                   1706                     559                       6 
+ chr1_KI270710v1_random  chr1_KI270712v1_random     chr1_KI270759v1_alt 
+                      1                       3                    2660 
+    chr1_KI270760v1_alt     chr1_KI270761v1_alt     chr1_KI270762v1_alt 
+                    719                    1241                    1122 
+    chr1_KI270763v1_alt     chr1_KI270764v1_alt     chr1_KI270765v1_alt 
+                   2572                     240                     101 
+    chr1_KI270766v1_alt     chr1_KI270892v1_alt                   chr10 
+                    454                    1242                  670216 
+   chr10_GL383545v1_alt    chr10_GL383546v1_alt    chr10_KI270824v1_alt 
+                   1081                    1675                    1069 
+   chr10_KI270825v1_alt                   chr11    chr11_GL383547v1_alt 
+                    838                  659200                     993 
+   chr11_JH159136v1_alt    chr11_JH159137v1_alt    chr11_KI270826v1_alt 
+                   1032                    1087                    1396 
+   chr11_KI270827v1_alt    chr11_KI270829v1_alt    chr11_KI270830v1_alt 
+                    323                    1555                    1300 
+   chr11_KI270831v1_alt    chr11_KI270832v1_alt    chr11_KI270902v1_alt 
+                   1555                    1417                     563 
+   chr11_KI270903v1_alt    chr11_KI270927v1_alt                   chr12 
+                   1474                    1309                  639792 
+   chr12_GL383549v1_alt    chr12_GL383550v2_alt    chr12_GL383551v1_alt 
+                   1514                     775                    1012 
+   chr12_GL383552v1_alt    chr12_GL383553v2_alt    chr12_GL877875v1_alt 
+                    563                    2101                     838 
+   chr12_GL877876v1_alt    chr12_KI270833v1_alt    chr12_KI270834v1_alt 
+                   2256                     441                     620 
+   chr12_KI270835v1_alt    chr12_KI270836v1_alt    chr12_KI270837v1_alt 
+                   1373                     330                     220 
+   chr12_KI270904v1_alt                   chr13    chr13_KI270838v1_alt 
+                   3201                  482554                    1949 
+   chr13_KI270839v1_alt    chr13_KI270840v1_alt    chr13_KI270841v1_alt 
+                    963                    1676                     945 
+   chr13_KI270842v1_alt    chr13_KI270843v1_alt                   chr14 
+                    196                     723                  437090 
+chr14_GL000009v2_random chr14_GL000194v1_random chr14_GL000225v1_random 
+                   1271                      27                       1 
+chr14_KI270722v1_random chr14_KI270726v1_random    chr14_KI270844v1_alt 
+                      4                     127                    1539 
+   chr14_KI270845v1_alt    chr14_KI270846v1_alt    chr14_KI270847v1_alt 
+                   1225                   10804                    7441 
+                  chr15    chr15_GL383554v1_alt    chr15_GL383555v2_alt 
+                 395032                     229                    1858 
+   chr15_KI270848v1_alt    chr15_KI270849v1_alt    chr15_KI270850v1_alt 
+                   3385                    1235                     575 
+   chr15_KI270851v1_alt    chr15_KI270852v1_alt    chr15_KI270905v1_alt 
+                    424                     584                   19103 
+   chr15_KI270906v1_alt                   chr16    chr16_GL383556v1_alt 
+                   1353                  416706                    1132 
+   chr16_GL383557v1_alt chr16_KI270728v1_random    chr16_KI270853v1_alt 
+                    942                     110                    8090 
+   chr16_KI270854v1_alt    chr16_KI270855v1_alt    chr16_KI270856v1_alt 
+                    674                     982                     443 
+                  chr17 chr17_GL000205v2_random    chr17_GL000258v2_alt 
+                 365470                      23                    5245 
+   chr17_GL383563v3_alt    chr17_GL383564v2_alt    chr17_GL383565v1_alt 
+                   1934                     511                    1023 
+   chr17_GL383566v1_alt    chr17_JH159146v1_alt    chr17_JH159147v1_alt 
+                    499                    2142                    1090 
+   chr17_JH159148v1_alt    chr17_KI270857v1_alt    chr17_KI270858v1_alt 
+                   1367                   10504                    1190 
+   chr17_KI270859v1_alt    chr17_KI270860v1_alt    chr17_KI270861v1_alt 
+                    660                    1438                    1053 
+   chr17_KI270862v1_alt    chr17_KI270907v1_alt    chr17_KI270908v1_alt 
+                   2712                    1080                    5597 
+   chr17_KI270909v1_alt    chr17_KI270910v1_alt                   chr18 
+                    860                    1065                  380874 
+   chr18_GL383567v1_alt    chr18_GL383568v1_alt    chr18_GL383569v1_alt 
+                   1624                    1710                    1259 
+   chr18_GL383570v1_alt    chr18_GL383571v1_alt    chr18_GL383572v1_alt 
+                   2525                     540                     794 
+   chr18_KI270863v1_alt    chr18_KI270864v1_alt    chr18_KI270911v1_alt 
+                   1171                     623                     790 
+   chr18_KI270912v1_alt                   chr19    chr19_GL000209v2_alt 
+                   1448                  311685                     711 
+   chr19_GL383573v1_alt    chr19_GL383574v1_alt    chr19_GL383575v2_alt 
+                   3081                     508                    1136 
+   chr19_GL383576v1_alt    chr19_GL949746v1_alt    chr19_GL949747v2_alt 
+                   2819                    6758                    4901 
+   chr19_GL949748v2_alt    chr19_GL949749v2_alt    chr19_GL949750v2_alt 
+                   3449                    3281                    3257 
+   chr19_GL949751v2_alt    chr19_GL949752v1_alt    chr19_GL949753v2_alt 
+                   3519                    7511                    4929 
+   chr19_KI270865v1_alt    chr19_KI270866v1_alt    chr19_KI270867v1_alt 
+                    294                     127                    1016 
+   chr19_KI270868v1_alt    chr19_KI270882v1_alt    chr19_KI270883v1_alt 
+                    576                    1105                    1057 
+   chr19_KI270884v1_alt    chr19_KI270885v1_alt    chr19_KI270886v1_alt 
+                    833                    1062                     944 
+   chr19_KI270887v1_alt    chr19_KI270888v1_alt    chr19_KI270889v1_alt 
+                   1160                     800                    1058 
+   chr19_KI270890v1_alt    chr19_KI270891v1_alt    chr19_KI270914v1_alt 
+                    778                    1060                     963 
+   chr19_KI270915v1_alt    chr19_KI270916v1_alt    chr19_KI270917v1_alt 
+                   1058                     780                    1365 
+   chr19_KI270918v1_alt    chr19_KI270919v1_alt    chr19_KI270920v1_alt 
+                    632                    1059                    1376 
+   chr19_KI270921v1_alt    chr19_KI270922v1_alt    chr19_KI270923v1_alt 
+                   1471                    1363                    1217 
+   chr19_KI270929v1_alt    chr19_KI270930v1_alt    chr19_KI270931v1_alt 
+                   1359                    1044                    1043 
+   chr19_KI270932v1_alt    chr19_KI270933v1_alt    chr19_KI270938v1_alt 
+                   1057                    1054                    8243 
+                   chr2     chr2_GL383521v1_alt     chr2_GL383522v1_alt 
+                1111033                    2325                     619 
+    chr2_GL582966v2_alt     chr2_KI270767v1_alt     chr2_KI270768v1_alt 
+                    371                     930                     529 
+    chr2_KI270769v1_alt     chr2_KI270770v1_alt     chr2_KI270771v1_alt 
+                    765                     957                     591 
+    chr2_KI270772v1_alt     chr2_KI270773v1_alt     chr2_KI270774v1_alt 
+                    704                     533                    1748 
+    chr2_KI270775v1_alt     chr2_KI270776v1_alt     chr2_KI270893v1_alt 
+                    548                    1162                     929 
+    chr2_KI270894v1_alt                   chr20    chr20_GL383577v2_alt 
+                    729                  296865                     950 
+   chr20_KI270869v1_alt    chr20_KI270870v1_alt    chr20_KI270871v1_alt 
+                    743                     895                     394 
+                  chr21    chr21_GL383578v2_alt    chr21_GL383579v2_alt 
+                 192002                     240                     842 
+   chr21_GL383580v2_alt    chr21_GL383581v2_alt    chr21_KI270872v1_alt 
+                    208                     443                     595 
+   chr21_KI270873v1_alt    chr21_KI270874v1_alt                   chr22 
+                    814                    1104                  184796 
+   chr22_GL383582v2_alt    chr22_GL383583v2_alt    chr22_KB663609v1_alt 
+                    715                     635                     335 
+   chr22_KI270875v1_alt    chr22_KI270876v1_alt    chr22_KI270877v1_alt 
+                   1769                     807                     558 
+   chr22_KI270878v1_alt    chr22_KI270879v1_alt    chr22_KI270928v1_alt 
+                   1340                    1699                     823 
+                   chr3  chr3_GL000221v1_random     chr3_GL383526v1_alt 
+                 942227                      17                     782 
+    chr3_JH636055v2_alt     chr3_KI270777v1_alt     chr3_KI270778v1_alt 
+                   1130                     642                    1605 
+    chr3_KI270779v1_alt     chr3_KI270780v1_alt     chr3_KI270781v1_alt 
+                   1707                    2303                     826 
+    chr3_KI270782v1_alt     chr3_KI270783v1_alt     chr3_KI270784v1_alt 
+                   1003                     620                     557 
+    chr3_KI270895v1_alt     chr3_KI270924v1_alt     chr3_KI270934v1_alt 
+                   1504                    1504                    1504 
+    chr3_KI270935v1_alt     chr3_KI270936v1_alt     chr3_KI270937v1_alt 
+                   1695                    1502                    1506 
+                   chr4  chr4_GL000008v2_random     chr4_GL000257v2_alt 
+                 966691                     934                    3920 
+    chr4_GL383527v1_alt     chr4_GL383528v1_alt     chr4_KI270785v1_alt 
+                    999                    1959                     727 
+    chr4_KI270786v1_alt     chr4_KI270787v1_alt     chr4_KI270788v1_alt 
+                   2775                     608                     777 
+    chr4_KI270789v1_alt     chr4_KI270790v1_alt     chr4_KI270896v1_alt 
+                   1383                    1182                    3535 
+    chr4_KI270925v1_alt                    chr5  chr5_GL000208v1_random 
+                   6691                  856311                      17 
+    chr5_GL339449v2_alt     chr5_GL383530v1_alt     chr5_GL383531v1_alt 
+                   2024                    1011                    2327 
+    chr5_GL383532v1_alt     chr5_GL949742v1_alt     chr5_KI270791v1_alt 
+                    923                    1284                    1175 
+    chr5_KI270792v1_alt     chr5_KI270793v1_alt     chr5_KI270794v1_alt 
+                   1220                     737                     846 
+    chr5_KI270795v1_alt     chr5_KI270796v1_alt     chr5_KI270897v1_alt 
+                    881                     792                    1021 
+    chr5_KI270898v1_alt                    chr6     chr6_GL000250v2_alt 
+                    926                  875190                   26017 
+    chr6_GL000251v2_alt     chr6_GL000252v2_alt     chr6_GL000253v2_alt 
+                  58626                   48288                   50112 
+    chr6_GL000254v2_alt     chr6_GL000255v2_alt     chr6_GL000256v2_alt 
+                  43164                   55019                   50270 
+    chr6_GL383533v1_alt     chr6_KB021644v2_alt     chr6_KI270758v1_alt 
+                   1475                    1438                    1589 
+    chr6_KI270797v1_alt     chr6_KI270798v1_alt     chr6_KI270799v1_alt 
+                    810                    1593                     952 
+    chr6_KI270800v1_alt     chr6_KI270801v1_alt     chr6_KI270802v1_alt 
+                   1339                    3253                     518 
+                   chr7     chr7_GL383534v2_alt     chr7_KI270803v1_alt 
+                 773496                     351                    7335 
+    chr7_KI270804v1_alt     chr7_KI270805v1_alt     chr7_KI270806v1_alt 
+                   1500                    1540                     771 
+    chr7_KI270807v1_alt     chr7_KI270808v1_alt     chr7_KI270809v1_alt 
+                   1056                    1789                     858 
+    chr7_KI270899v1_alt                    chr8     chr8_KI270810v1_alt 
+                   1562                  735878                    1857 
+    chr8_KI270811v1_alt     chr8_KI270812v1_alt     chr8_KI270813v1_alt 
+                   2746                    1827                     527 
+    chr8_KI270814v1_alt     chr8_KI270815v1_alt     chr8_KI270816v1_alt 
+                   1009                     508                    1821 
+    chr8_KI270817v1_alt     chr8_KI270818v1_alt     chr8_KI270819v1_alt 
+                   1059                     887                     839 
+    chr8_KI270820v1_alt     chr8_KI270821v1_alt     chr8_KI270822v1_alt 
+                    166                    8284                    2349 
+    chr8_KI270900v1_alt     chr8_KI270901v1_alt     chr8_KI270926v1_alt 
+                   2628                    1789                    1675 
+                   chr9     chr9_GL383539v1_alt     chr9_GL383540v1_alt 
+                 575772                    1093                     246 
+    chr9_GL383541v1_alt     chr9_GL383542v1_alt  chr9_KI270719v1_random 
+                    672                     385                       4 
+    chr9_KI270823v1_alt                    chrM        chrUn_GL000195v1 
+                   2255                     334                      41 
+       chrUn_GL000214v1        chrUn_GL000216v2        chrUn_GL000218v1 
+                     16                       1                      18 
+       chrUn_GL000219v1        chrUn_GL000220v1        chrUn_GL000224v1 
+                     99                      35                      13 
+       chrUn_GL000226v1        chrUn_KI270448v1        chrUn_KI270742v1 
+                     46                       6                     575 
+       chrUn_KI270744v1        chrUn_KI270747v1                    chrX 
+                     10                       5                  476927 
+    chrX_KI270880v1_alt     chrX_KI270881v1_alt     chrX_KI270913v1_alt 
+                   3356                     705                    3296 
+                   chrY 
+                  30137 
+Only keeping chrs 1-22, X, Y
+
+      deletion         in-del      insertion microsatellite            mnp 
+        703013           3562         483184           3859            275 
+        single 
+      12619391 
+Only keeping class 'single'
+Computing MAF
+Instantiating object
+Reading file
+
+                   chr1     chr1_GL383518v1_alt     chr1_GL383519v1_alt 
+                 989791                     492                     195 
+    chr1_GL383520v2_alt  chr1_KI270706v1_random  chr1_KI270708v1_random 
+                   1741                     776                       6 
+ chr1_KI270710v1_random  chr1_KI270714v1_random     chr1_KI270759v1_alt 
+                      1                      41                    2478 
+    chr1_KI270760v1_alt     chr1_KI270761v1_alt     chr1_KI270762v1_alt 
+                    708                    1249                    1174 
+    chr1_KI270763v1_alt     chr1_KI270764v1_alt     chr1_KI270765v1_alt 
+                   2504                     238                      41 
+    chr1_KI270766v1_alt     chr1_KI270892v1_alt                   chr10 
+                    541                    1250                  642866 
+   chr10_GL383545v1_alt    chr10_GL383546v1_alt    chr10_KI270824v1_alt 
+                   1086                    1592                    1715 
+   chr10_KI270825v1_alt                   chr11    chr11_GL383547v1_alt 
+                    706                  623634                    1005 
+   chr11_JH159136v1_alt    chr11_JH159137v1_alt    chr11_KI270826v1_alt 
+                   1035                     955                    1320 
+   chr11_KI270827v1_alt    chr11_KI270829v1_alt    chr11_KI270830v1_alt 
+                    311                    1596                    1147 
+   chr11_KI270831v1_alt    chr11_KI270832v1_alt    chr11_KI270902v1_alt 
+                   1438                    1172                     446 
+   chr11_KI270903v1_alt    chr11_KI270927v1_alt                   chr12 
+                   1361                    1130                  617245 
+   chr12_GL383549v1_alt    chr12_GL383550v2_alt    chr12_GL383551v1_alt 
+                     64                     109                    1025 
+   chr12_GL383552v1_alt    chr12_GL383553v2_alt    chr12_GL877875v1_alt 
+                    559                     102                     750 
+   chr12_GL877876v1_alt    chr12_KI270833v1_alt    chr12_KI270834v1_alt 
+                   2096                     432                     606 
+   chr12_KI270835v1_alt    chr12_KI270836v1_alt    chr12_KI270837v1_alt 
+                   1427                     376                      11 
+   chr12_KI270904v1_alt                   chr13    chr13_KI270838v1_alt 
+                   3010                  466297                    1933 
+   chr13_KI270839v1_alt    chr13_KI270840v1_alt    chr13_KI270841v1_alt 
+                    122                    1834                     829 
+   chr13_KI270842v1_alt    chr13_KI270843v1_alt                   chr14 
+                    213                     713                  423041 
+chr14_GL000009v2_random chr14_GL000194v1_random chr14_GL000225v1_random 
+                   1322                      27                       1 
+chr14_KI270722v1_random chr14_KI270726v1_random    chr14_KI270844v1_alt 
+                      4                       6                    1303 
+   chr14_KI270845v1_alt    chr14_KI270846v1_alt    chr14_KI270847v1_alt 
+                   1242                   10055                    7182 
+                  chr15    chr15_GL383554v1_alt    chr15_GL383555v2_alt 
+                 380419                     302                    1865 
+   chr15_KI270848v1_alt    chr15_KI270849v1_alt    chr15_KI270850v1_alt 
+                    120                    1253                     571 
+   chr15_KI270851v1_alt    chr15_KI270852v1_alt    chr15_KI270905v1_alt 
+                     60                     663                   18549 
+   chr15_KI270906v1_alt                   chr16    chr16_GL383556v1_alt 
+                     49                  411441                    1100 
+   chr16_GL383557v1_alt chr16_KI270728v1_random    chr16_KI270853v1_alt 
+                     10                      86                    7556 
+   chr16_KI270854v1_alt    chr16_KI270855v1_alt    chr16_KI270856v1_alt 
+                    645                     919                     457 
+                  chr17 chr17_GL000205v2_random    chr17_GL000258v2_alt 
+                 361374                      23                    1714 
+   chr17_GL383563v3_alt    chr17_GL383564v2_alt    chr17_GL383565v1_alt 
+                   1974                      38                    1032 
+   chr17_GL383566v1_alt    chr17_JH159146v1_alt    chr17_JH159147v1_alt 
+                    514                    2078                      32 
+   chr17_JH159148v1_alt    chr17_KI270857v1_alt    chr17_KI270858v1_alt 
+                     51                   10679                    1022 
+   chr17_KI270859v1_alt    chr17_KI270860v1_alt    chr17_KI270861v1_alt 
+                    704                      48                    1088 
+   chr17_KI270862v1_alt    chr17_KI270907v1_alt    chr17_KI270908v1_alt 
+                   2575                      62                    6530 
+   chr17_KI270909v1_alt    chr17_KI270910v1_alt                   chr18 
+                   1043                     973                  370220 
+   chr18_GL383567v1_alt    chr18_GL383568v1_alt    chr18_GL383569v1_alt 
+                   1530                      15                    1249 
+   chr18_GL383570v1_alt    chr18_GL383571v1_alt    chr18_GL383572v1_alt 
+                     89                     508                     818 
+   chr18_KI270863v1_alt    chr18_KI270864v1_alt    chr18_KI270911v1_alt 
+                   1075                      31                     814 
+   chr18_KI270912v1_alt                   chr19    chr19_GL000209v2_alt 
+                   1408                  311128                     109 
+   chr19_GL383573v1_alt    chr19_GL383574v1_alt    chr19_GL383575v2_alt 
+                   3049                     452                    1019 
+   chr19_GL383576v1_alt    chr19_GL949746v1_alt    chr19_GL949747v2_alt 
+                     84                    7069                    5086 
+   chr19_GL949748v2_alt    chr19_GL949749v2_alt    chr19_GL949750v2_alt 
+                   3584                    3353                    3257 
+   chr19_GL949751v2_alt    chr19_GL949752v1_alt    chr19_GL949753v2_alt 
+                   3724                    8130                    4986 
+   chr19_KI270865v1_alt    chr19_KI270866v1_alt    chr19_KI270867v1_alt 
+                    268                     105                      23 
+   chr19_KI270868v1_alt    chr19_KI270882v1_alt    chr19_KI270883v1_alt 
+                    500                     120                     120 
+   chr19_KI270884v1_alt    chr19_KI270885v1_alt    chr19_KI270886v1_alt 
+                    108                     120                     117 
+   chr19_KI270887v1_alt    chr19_KI270888v1_alt    chr19_KI270889v1_alt 
+                    120                     103                     120 
+   chr19_KI270890v1_alt    chr19_KI270891v1_alt    chr19_KI270914v1_alt 
+                    107                     120                     117 
+   chr19_KI270915v1_alt    chr19_KI270916v1_alt    chr19_KI270917v1_alt 
+                    120                     107                    1950 
+   chr19_KI270918v1_alt    chr19_KI270919v1_alt    chr19_KI270920v1_alt 
+                   1014                     120                    1965 
+   chr19_KI270921v1_alt    chr19_KI270922v1_alt    chr19_KI270923v1_alt 
+                   2053                    1943                    1716 
+   chr19_KI270929v1_alt    chr19_KI270930v1_alt    chr19_KI270931v1_alt 
+                   1933                     120                     120 
+   chr19_KI270932v1_alt    chr19_KI270933v1_alt    chr19_KI270938v1_alt 
+                    120                     120                    9000 
+                   chr2     chr2_GL383521v1_alt     chr2_GL383522v1_alt 
+                1087748                      93                     554 
+    chr2_GL582966v2_alt     chr2_KI270767v1_alt     chr2_KI270768v1_alt 
+                    343                    1042                     547 
+    chr2_KI270769v1_alt     chr2_KI270770v1_alt     chr2_KI270771v1_alt 
+                    798                     954                     555 
+    chr2_KI270772v1_alt     chr2_KI270773v1_alt     chr2_KI270774v1_alt 
+                   2586                     563                    1669 
+    chr2_KI270775v1_alt     chr2_KI270776v1_alt     chr2_KI270893v1_alt 
+                    564                    1037                    1040 
+    chr2_KI270894v1_alt                   chr20    chr20_GL383577v2_alt 
+                    453                  291958                     866 
+   chr20_KI270869v1_alt    chr20_KI270870v1_alt    chr20_KI270871v1_alt 
+                    657                     898                     368 
+                  chr21    chr21_GL383578v2_alt    chr21_GL383579v2_alt 
+                 191589                     252                     841 
+   chr21_GL383580v2_alt    chr21_GL383581v2_alt    chr21_KI270872v1_alt 
+                    211                     448                     632 
+   chr21_KI270873v1_alt    chr21_KI270874v1_alt                   chr22 
+                    838                    1156                  189350 
+   chr22_GL383582v2_alt    chr22_GL383583v2_alt    chr22_KB663609v1_alt 
+                    726                     676                     317 
+   chr22_KI270875v1_alt    chr22_KI270876v1_alt    chr22_KI270877v1_alt 
+                   1734                     832                     546 
+   chr22_KI270878v1_alt    chr22_KI270879v1_alt    chr22_KI270928v1_alt 
+                   1458                    1904                     803 
+                   chr3  chr3_GL000221v1_random     chr3_GL383526v1_alt 
+                 915047                      17                     762 
+    chr3_JH636055v2_alt     chr3_KI270777v1_alt     chr3_KI270778v1_alt 
+                    197                     169                    1668 
+    chr3_KI270779v1_alt     chr3_KI270780v1_alt     chr3_KI270781v1_alt 
+                   1847                    2390                      30 
+    chr3_KI270782v1_alt     chr3_KI270783v1_alt     chr3_KI270784v1_alt 
+                     53                     636                      37 
+    chr3_KI270895v1_alt     chr3_KI270924v1_alt     chr3_KI270934v1_alt 
+                    625                     624                     624 
+    chr3_KI270935v1_alt     chr3_KI270936v1_alt     chr3_KI270937v1_alt 
+                   1839                     623                     623 
+                   chr4  chr4_GL000008v2_random     chr4_GL000257v2_alt 
+                 950191                    1268                    3701 
+    chr4_GL383527v1_alt     chr4_GL383528v1_alt     chr4_KI270785v1_alt 
+                    919                    2040                     718 
+    chr4_KI270786v1_alt     chr4_KI270787v1_alt     chr4_KI270788v1_alt 
+                   3177                     639                     726 
+    chr4_KI270789v1_alt     chr4_KI270790v1_alt     chr4_KI270896v1_alt 
+                   1314                    1158                    4102 
+    chr4_KI270925v1_alt                    chr5  chr5_GL000208v1_random 
+                   7128                  815998                      17 
+    chr5_GL339449v2_alt     chr5_GL383530v1_alt     chr5_GL383531v1_alt 
+                   1825                       1                      28 
+    chr5_GL383532v1_alt     chr5_GL949742v1_alt     chr5_KI270791v1_alt 
+                      2                    1286                     551 
+    chr5_KI270792v1_alt     chr5_KI270793v1_alt     chr5_KI270794v1_alt 
+                   1227                      64                     720 
+    chr5_KI270795v1_alt     chr5_KI270796v1_alt     chr5_KI270897v1_alt 
+                    713                     796                    1332 
+    chr5_KI270898v1_alt                    chr6     chr6_GL000250v2_alt 
+                    750                  845227                   23397 
+    chr6_GL000251v2_alt     chr6_GL000252v2_alt     chr6_GL000253v2_alt 
+                  54372                   44915                   46482 
+    chr6_GL000254v2_alt     chr6_GL000255v2_alt     chr6_GL000256v2_alt 
+                  39525                   51515                   46969 
+    chr6_GL383533v1_alt     chr6_KB021644v2_alt     chr6_KI270758v1_alt 
+                     49                    1507                     195 
+    chr6_KI270797v1_alt     chr6_KI270798v1_alt     chr6_KI270799v1_alt 
+                    780                    1527                     868 
+    chr6_KI270800v1_alt     chr6_KI270801v1_alt     chr6_KI270802v1_alt 
+                   1276                    3009                     534 
+                   chr7     chr7_GL383534v2_alt     chr7_KI270803v1_alt 
+                 763236                     366                    5074 
+    chr7_KI270804v1_alt     chr7_KI270805v1_alt     chr7_KI270806v1_alt 
+                   1506                     147                      51 
+    chr7_KI270807v1_alt     chr7_KI270808v1_alt     chr7_KI270809v1_alt 
+                   1051                    1837                    1091 
+    chr7_KI270899v1_alt                    chr8     chr8_KI270810v1_alt 
+                   1585                  714119                    1898 
+    chr8_KI270811v1_alt     chr8_KI270812v1_alt     chr8_KI270813v1_alt 
+                   2766                    1701                     517 
+    chr8_KI270814v1_alt     chr8_KI270815v1_alt     chr8_KI270816v1_alt 
+                   1055                     477                    1789 
+    chr8_KI270817v1_alt     chr8_KI270818v1_alt     chr8_KI270819v1_alt 
+                   1078                     858                     817 
+    chr8_KI270820v1_alt     chr8_KI270821v1_alt     chr8_KI270822v1_alt 
+                    157                    7614                    2216 
+    chr8_KI270900v1_alt     chr8_KI270901v1_alt     chr8_KI270926v1_alt 
+                   2565                    1876                    1652 
+                   chr9     chr9_GL383539v1_alt     chr9_GL383540v1_alt 
+                 561755                    1062                     247 
+    chr9_GL383541v1_alt     chr9_GL383542v1_alt  chr9_KI270719v1_random 
+                    724                     392                       4 
+    chr9_KI270823v1_alt                    chrM        chrUn_GL000195v1 
+                   2136                     153                      41 
+       chrUn_GL000214v1        chrUn_GL000216v2        chrUn_GL000218v1 
+                     16                       1                      18 
+       chrUn_GL000219v1        chrUn_GL000220v1        chrUn_GL000224v1 
+                     99                      35                      13 
+       chrUn_GL000226v1        chrUn_KI270448v1        chrUn_KI270742v1 
+                     46                      12                     636 
+       chrUn_KI270744v1        chrUn_KI270747v1                    chrX 
+                      7                       1                  102630 
+    chrX_KI270880v1_alt     chrX_KI270881v1_alt     chrX_KI270913v1_alt 
+                    233                      49                     230 
+                   chrY 
+                   6349 
+Only keeping chrs 1-22, X, Y
+
+      deletion         in-del      insertion microsatellite            mnp 
+        848977           9013         623640           3860            274 
+        single 
+      11546889 
+Only keeping class 'single'
+Computing MAF
+Instantiating object
+Reading file
+
+                   chr1     chr1_GL383518v1_alt     chr1_GL383519v1_alt 
+                1073350                     501                     251 
+    chr1_GL383520v2_alt  chr1_KI270706v1_random  chr1_KI270707v1_random 
+                   1755                     780                       2 
+ chr1_KI270708v1_random  chr1_KI270710v1_random  chr1_KI270712v1_random 
+                      7                       2                      10 
+ chr1_KI270714v1_random     chr1_KI270759v1_alt     chr1_KI270760v1_alt 
+                     41                    2784                     778 
+    chr1_KI270761v1_alt     chr1_KI270762v1_alt     chr1_KI270763v1_alt 
+                   1318                    1323                    2692 
+    chr1_KI270764v1_alt     chr1_KI270765v1_alt     chr1_KI270766v1_alt 
+                    252                      68                     704 
+    chr1_KI270892v1_alt                   chr10    chr10_GL383545v1_alt 
+                   1319                  687124                    1129 
+   chr10_GL383546v1_alt    chr10_KI270824v1_alt    chr10_KI270825v1_alt 
+                   1646                    1732                     855 
+                  chr11    chr11_GL383547v1_alt    chr11_JH159136v1_alt 
+                 676832                    1037                    1093 
+   chr11_JH159137v1_alt    chr11_KI270826v1_alt    chr11_KI270827v1_alt 
+                   1088                    1453                     322 
+   chr11_KI270829v1_alt    chr11_KI270830v1_alt    chr11_KI270831v1_alt 
+                   1657                    1227                    1549 
+   chr11_KI270832v1_alt    chr11_KI270902v1_alt    chr11_KI270903v1_alt 
+                   1363                     676                    1431 
+   chr11_KI270927v1_alt                   chr12    chr12_GL383549v1_alt 
+                   1368                  654047                     594 
+   chr12_GL383550v2_alt    chr12_GL383551v1_alt    chr12_GL383552v1_alt 
+                    910                    1050                     597 
+   chr12_GL383553v2_alt    chr12_GL877875v1_alt    chr12_GL877876v1_alt 
+                    768                     613                    2341 
+   chr12_KI270833v1_alt    chr12_KI270834v1_alt    chr12_KI270835v1_alt 
+                    461                     629                    1453 
+   chr12_KI270836v1_alt    chr12_KI270837v1_alt    chr12_KI270904v1_alt 
+                    376                     221                    3275 
+                  chr13    chr13_KI270838v1_alt    chr13_KI270839v1_alt 
+                 498505                    1948                    1011 
+   chr13_KI270840v1_alt    chr13_KI270841v1_alt    chr13_KI270842v1_alt 
+                   1838                     883                     259 
+   chr13_KI270843v1_alt                   chr14 chr14_GL000009v2_random 
+                    729                  450129                    1392 
+chr14_GL000194v1_random chr14_GL000225v1_random chr14_KI270726v1_random 
+                     48                       2                      34 
+   chr14_KI270844v1_alt    chr14_KI270845v1_alt    chr14_KI270846v1_alt 
+                   1521                    1258                    9238 
+   chr14_KI270847v1_alt                   chr15    chr15_GL383554v1_alt 
+                   7112                  408967                     352 
+   chr15_GL383555v2_alt chr15_KI270727v1_random    chr15_KI270848v1_alt 
+                   1973                      39                    1520 
+   chr15_KI270849v1_alt    chr15_KI270850v1_alt    chr15_KI270851v1_alt 
+                   1306                     612                     408 
+   chr15_KI270852v1_alt    chr15_KI270905v1_alt    chr15_KI270906v1_alt 
+                   1158                   19964                     704 
+                  chr16    chr16_GL383556v1_alt    chr16_GL383557v1_alt 
+                 434301                    1208                     296 
+chr16_KI270728v1_random    chr16_KI270853v1_alt    chr16_KI270854v1_alt 
+                     53                    8746                     651 
+   chr16_KI270855v1_alt    chr16_KI270856v1_alt                   chr17 
+                    943                     469                  379576 
+chr17_GL000205v2_random    chr17_GL000258v2_alt    chr17_GL383563v3_alt 
+                     22                    5843                    2007 
+   chr17_GL383564v2_alt    chr17_GL383565v1_alt    chr17_GL383566v1_alt 
+                    503                    1080                     557 
+   chr17_JH159146v1_alt    chr17_JH159147v1_alt    chr17_JH159148v1_alt 
+                   2278                     442                     540 
+   chr17_KI270857v1_alt    chr17_KI270858v1_alt    chr17_KI270859v1_alt 
+                  10638                    1089                     714 
+   chr17_KI270860v1_alt    chr17_KI270861v1_alt    chr17_KI270862v1_alt 
+                   1558                    1134                    2857 
+   chr17_KI270907v1_alt    chr17_KI270908v1_alt    chr17_KI270909v1_alt 
+                   1218                    6366                    1118 
+   chr17_KI270910v1_alt                   chr18    chr18_GL383567v1_alt 
+                   1138                  391836                    1671 
+   chr18_GL383568v1_alt    chr18_GL383569v1_alt    chr18_GL383570v1_alt 
+                    763                    1285                    1012 
+   chr18_GL383571v1_alt    chr18_GL383572v1_alt    chr18_KI270863v1_alt 
+                    529                     878                    1180 
+   chr18_KI270864v1_alt    chr18_KI270911v1_alt    chr18_KI270912v1_alt 
+                    641                     874                    1450 
+                  chr19    chr19_GL000209v2_alt    chr19_GL383573v1_alt 
+                 319919                      11                    3241 
+   chr19_GL383574v1_alt    chr19_GL383575v2_alt    chr19_GL383576v1_alt 
+                    518                    1063                    1057 
+   chr19_GL949746v1_alt    chr19_GL949747v2_alt    chr19_GL949748v2_alt 
+                   5198                    2893                    1401 
+   chr19_GL949749v2_alt    chr19_GL949750v2_alt    chr19_GL949751v2_alt 
+                   1573                    1495                    1574 
+   chr19_GL949752v1_alt    chr19_GL949753v2_alt    chr19_KI270865v1_alt 
+                   5303                    3244                     286 
+   chr19_KI270866v1_alt    chr19_KI270867v1_alt    chr19_KI270868v1_alt 
+                    124                     783                     557 
+   chr19_KI270882v1_alt    chr19_KI270883v1_alt    chr19_KI270884v1_alt 
+                    136                      96                       5 
+   chr19_KI270885v1_alt    chr19_KI270886v1_alt    chr19_KI270887v1_alt 
+                     96                     106                     184 
+   chr19_KI270888v1_alt    chr19_KI270889v1_alt    chr19_KI270890v1_alt 
+                      5                      96                      16 
+   chr19_KI270891v1_alt    chr19_KI270914v1_alt    chr19_KI270915v1_alt 
+                     96                      99                      96 
+   chr19_KI270916v1_alt    chr19_KI270917v1_alt    chr19_KI270918v1_alt 
+                     11                     353                     103 
+   chr19_KI270919v1_alt    chr19_KI270920v1_alt    chr19_KI270921v1_alt 
+                     96                     363                     354 
+   chr19_KI270922v1_alt    chr19_KI270923v1_alt    chr19_KI270929v1_alt 
+                    353                     263                     363 
+   chr19_KI270930v1_alt    chr19_KI270931v1_alt    chr19_KI270932v1_alt 
+                     96                      96                      96 
+   chr19_KI270933v1_alt    chr19_KI270938v1_alt                    chr2 
+                    106                    5948                 1151746 
+    chr2_GL383521v1_alt     chr2_GL383522v1_alt     chr2_GL582966v2_alt 
+                    830                     638                     355 
+    chr2_KI270767v1_alt     chr2_KI270768v1_alt     chr2_KI270769v1_alt 
+                   1056                     602                     802 
+    chr2_KI270770v1_alt     chr2_KI270771v1_alt     chr2_KI270772v1_alt 
+                    961                     593                     754 
+    chr2_KI270773v1_alt     chr2_KI270774v1_alt     chr2_KI270775v1_alt 
+                    560                    1745                     574 
+    chr2_KI270776v1_alt     chr2_KI270893v1_alt     chr2_KI270894v1_alt 
+                   1234                    1054                     807 
+                  chr20    chr20_GL383577v2_alt    chr20_KI270869v1_alt 
+                 303693                     979                     769 
+   chr20_KI270870v1_alt    chr20_KI270871v1_alt                   chr21 
+                    949                     397                  199926 
+   chr21_GL383578v2_alt    chr21_GL383579v2_alt    chr21_GL383580v2_alt 
+                    252                     868                     214 
+   chr21_GL383581v2_alt    chr21_KI270872v1_alt    chr21_KI270873v1_alt 
+                    455                     640                     869 
+   chr21_KI270874v1_alt                   chr22    chr22_GL383582v2_alt 
+                   1171                  195182                     737 
+   chr22_GL383583v2_alt    chr22_KB663609v1_alt chr22_KI270731v1_random 
+                    676                     384                       1 
+   chr22_KI270875v1_alt    chr22_KI270876v1_alt    chr22_KI270877v1_alt 
+                   1850                     839                     550 
+   chr22_KI270878v1_alt    chr22_KI270879v1_alt    chr22_KI270928v1_alt 
+                   1472                    2055                     893 
+                   chr3  chr3_GL000221v1_random     chr3_GL383526v1_alt 
+                 977240                      16                     849 
+    chr3_JH636055v2_alt     chr3_KI270777v1_alt     chr3_KI270778v1_alt 
+                   1138                     656                    1679 
+    chr3_KI270779v1_alt     chr3_KI270780v1_alt     chr3_KI270781v1_alt 
+                   2164                    2602                     832 
+    chr3_KI270782v1_alt     chr3_KI270783v1_alt     chr3_KI270784v1_alt 
+                   1017                     638                     649 
+    chr3_KI270895v1_alt     chr3_KI270924v1_alt     chr3_KI270934v1_alt 
+                   1904                    1916                    1907 
+    chr3_KI270935v1_alt     chr3_KI270936v1_alt     chr3_KI270937v1_alt 
+                   2156                    1889                    1914 
+                   chr4  chr4_GL000008v2_random     chr4_GL000257v2_alt 
+                1004012                    1253                    4109 
+    chr4_GL383527v1_alt     chr4_GL383528v1_alt     chr4_KI270785v1_alt 
+                   1014                    2127                     750 
+    chr4_KI270786v1_alt     chr4_KI270787v1_alt     chr4_KI270788v1_alt 
+                   3245                     642                     823 
+    chr4_KI270789v1_alt     chr4_KI270790v1_alt     chr4_KI270896v1_alt 
+                   1459                    1257                    4068 
+    chr4_KI270925v1_alt                    chr5  chr5_GL000208v1_random 
+                   7393                  878130                      18 
+    chr5_GL339449v2_alt     chr5_GL383530v1_alt     chr5_GL383531v1_alt 
+                   2023                     270                     840 
+    chr5_GL383532v1_alt     chr5_GL949742v1_alt     chr5_KI270791v1_alt 
+                    296                    1403                    1213 
+    chr5_KI270792v1_alt     chr5_KI270793v1_alt     chr5_KI270794v1_alt 
+                   1312                     759                     858 
+    chr5_KI270795v1_alt     chr5_KI270796v1_alt     chr5_KI270897v1_alt 
+                    733                     832                    1056 
+    chr5_KI270898v1_alt                    chr6     chr6_GL000250v2_alt 
+                    768                  909278                   28259 
+    chr6_GL000251v2_alt     chr6_GL000252v2_alt     chr6_GL000253v2_alt 
+                  62650                   53707                   55466 
+    chr6_GL000254v2_alt     chr6_GL000255v2_alt     chr6_GL000256v2_alt 
+                  47958                   60723                   55831 
+    chr6_GL383533v1_alt     chr6_KB021644v2_alt     chr6_KI270758v1_alt 
+                    493                    1509                    1647 
+    chr6_KI270797v1_alt     chr6_KI270798v1_alt     chr6_KI270799v1_alt 
+                    816                    1675                     918 
+    chr6_KI270800v1_alt     chr6_KI270801v1_alt     chr6_KI270802v1_alt 
+                   1355                    3223                     540 
+                   chr7     chr7_GL383534v2_alt     chr7_KI270803v1_alt 
+                 803258                     369                    6142 
+    chr7_KI270804v1_alt     chr7_KI270805v1_alt     chr7_KI270806v1_alt 
+                   1514                    1673                     854 
+    chr7_KI270807v1_alt     chr7_KI270808v1_alt     chr7_KI270809v1_alt 
+                   1106                    2013                    1131 
+    chr7_KI270899v1_alt                    chr8     chr8_KI270810v1_alt 
+                   1589                  759547                    1968 
+    chr8_KI270811v1_alt     chr8_KI270812v1_alt     chr8_KI270813v1_alt 
+                   2775                    1796                     554 
+    chr8_KI270814v1_alt     chr8_KI270815v1_alt     chr8_KI270816v1_alt 
+                   1084                     505                    1568 
+    chr8_KI270817v1_alt     chr8_KI270818v1_alt     chr8_KI270819v1_alt 
+                   1113                     884                     854 
+    chr8_KI270820v1_alt     chr8_KI270821v1_alt     chr8_KI270822v1_alt 
+                    158                    8894                    2280 
+    chr8_KI270900v1_alt     chr8_KI270901v1_alt     chr8_KI270926v1_alt 
+                   2589                    1915                    1696 
+                   chr9     chr9_GL383539v1_alt     chr9_GL383540v1_alt 
+                 597176                    1105                     287 
+    chr9_GL383541v1_alt     chr9_GL383542v1_alt  chr9_KI270718v1_random 
+                    749                     398                       1 
+ chr9_KI270719v1_random     chr9_KI270823v1_alt                    chrM 
+                      7                    2250                     150 
+       chrUn_GL000195v1        chrUn_GL000214v1        chrUn_GL000216v2 
+                     48                      16                       1 
+       chrUn_GL000218v1        chrUn_GL000219v1        chrUn_GL000220v1 
+                     21                     123                      35 
+       chrUn_GL000224v1        chrUn_GL000226v1        chrUn_KI270742v1 
+                     14                      52                     669 
+       chrUn_KI270743v1        chrUn_KI270744v1                    chrX 
+                      7                      82                  484383 
+    chrX_KI270880v1_alt     chrX_KI270881v1_alt     chrX_KI270913v1_alt 
+                   2450                     767                    2381 
+                   chrY 
+                  35919 
+Only keeping chrs 1-22, X, Y
+
+      deletion         in-del      insertion microsatellite            mnp 
+        854037          15548         647923           3869            318 
+        single 
+      12752381 
+Only keeping class 'single'
+Computing MAF
+Instantiating object
+Reading file
+
+                   chr1     chr1_GL383518v1_alt     chr1_GL383519v1_alt 
+                1076887                     500                     247 
+    chr1_GL383520v2_alt  chr1_KI270706v1_random  chr1_KI270707v1_random 
+                   1754                     752                       2 
+ chr1_KI270708v1_random  chr1_KI270710v1_random  chr1_KI270712v1_random 
+                      6                       2                      10 
+ chr1_KI270714v1_random     chr1_KI270759v1_alt     chr1_KI270760v1_alt 
+                      4                    2780                     777 
+    chr1_KI270761v1_alt     chr1_KI270762v1_alt     chr1_KI270763v1_alt 
+                   1306                    1321                    2658 
+    chr1_KI270764v1_alt     chr1_KI270765v1_alt     chr1_KI270766v1_alt 
+                    252                     102                     627 
+    chr1_KI270892v1_alt                   chr10    chr10_GL383545v1_alt 
+                   1307                  691873                    1111 
+   chr10_GL383546v1_alt    chr10_KI270824v1_alt    chr10_KI270825v1_alt 
+                   1631                    1728                     854 
+                  chr11    chr11_GL383547v1_alt    chr11_JH159136v1_alt 
+                 679731                    1034                    1088 
+   chr11_JH159137v1_alt    chr11_KI270826v1_alt    chr11_KI270827v1_alt 
+                   1087                    1453                     322 
+   chr11_KI270829v1_alt    chr11_KI270830v1_alt    chr11_KI270831v1_alt 
+                   1638                    1219                    1546 
+   chr11_KI270832v1_alt    chr11_KI270902v1_alt    chr11_KI270903v1_alt 
+                   1360                     618                    1429 
+   chr11_KI270927v1_alt                   chr12    chr12_GL383549v1_alt 
+                   1368                  653473                     591 
+   chr12_GL383550v2_alt    chr12_GL383551v1_alt    chr12_GL383552v1_alt 
+                    902                    1047                     596 
+   chr12_GL383553v2_alt    chr12_GL877875v1_alt    chr12_GL877876v1_alt 
+                    766                     922                    2334 
+   chr12_KI270833v1_alt    chr12_KI270834v1_alt    chr12_KI270835v1_alt 
+                    461                     628                    1452 
+   chr12_KI270836v1_alt    chr12_KI270837v1_alt    chr12_KI270904v1_alt 
+                    376                     219                    3259 
+                  chr13    chr13_KI270838v1_alt    chr13_KI270839v1_alt 
+                 497221                    1948                    1011 
+   chr13_KI270840v1_alt    chr13_KI270841v1_alt    chr13_KI270842v1_alt 
+                   1824                     883                     259 
+   chr13_KI270843v1_alt                   chr14 chr14_GL000009v2_random 
+                    730                  450845                    1352 
+chr14_GL000194v1_random chr14_GL000225v1_random chr14_KI270726v1_random 
+                     59                       2                      34 
+   chr14_KI270844v1_alt    chr14_KI270845v1_alt    chr14_KI270846v1_alt 
+                   1519                    1258                   10928 
+   chr14_KI270847v1_alt                   chr15    chr15_GL383554v1_alt 
+                   7094                  407760                     347 
+   chr15_GL383555v2_alt chr15_KI270727v1_random    chr15_KI270848v1_alt 
+                   1970                      16                    1511 
+   chr15_KI270849v1_alt    chr15_KI270850v1_alt    chr15_KI270851v1_alt 
+                   1298                     605                     401 
+   chr15_KI270852v1_alt    chr15_KI270905v1_alt    chr15_KI270906v1_alt 
+                   1130                   19835                     697 
+                  chr16    chr16_GL383556v1_alt    chr16_GL383557v1_alt 
+                 433428                    1200                     296 
+chr16_KI270728v1_random    chr16_KI270853v1_alt    chr16_KI270854v1_alt 
+                     53                    8643                     651 
+   chr16_KI270855v1_alt    chr16_KI270856v1_alt                   chr17 
+                    943                     469                  381597 
+chr17_GL000205v2_random    chr17_GL000258v2_alt    chr17_GL383563v3_alt 
+                     19                    5753                    2067 
+   chr17_GL383564v2_alt    chr17_GL383565v1_alt    chr17_GL383566v1_alt 
+                    503                    1080                     554 
+   chr17_JH159146v1_alt    chr17_JH159147v1_alt    chr17_JH159148v1_alt 
+                   2274                     441                     536 
+   chr17_KI270857v1_alt    chr17_KI270858v1_alt    chr17_KI270859v1_alt 
+                  10497                    1088                     712 
+   chr17_KI270860v1_alt    chr17_KI270861v1_alt    chr17_KI270862v1_alt 
+                   1557                    1132                    2858 
+   chr17_KI270907v1_alt    chr17_KI270908v1_alt    chr17_KI270909v1_alt 
+                   1228                    6233                    1100 
+   chr17_KI270910v1_alt                   chr18    chr18_GL383567v1_alt 
+                   1138                  391008                    1667 
+   chr18_GL383568v1_alt    chr18_GL383569v1_alt    chr18_GL383570v1_alt 
+                    760                    1284                    1006 
+   chr18_GL383571v1_alt    chr18_GL383572v1_alt    chr18_KI270863v1_alt 
+                    527                     878                    1178 
+   chr18_KI270864v1_alt    chr18_KI270911v1_alt    chr18_KI270912v1_alt 
+                    640                     874                    1449 
+                  chr19    chr19_GL000209v2_alt    chr19_GL383573v1_alt 
+                 324552                    1164                    3224 
+   chr19_GL383574v1_alt    chr19_GL383575v2_alt    chr19_GL383576v1_alt 
+                    519                    1062                    1043 
+   chr19_GL949746v1_alt    chr19_GL949747v2_alt    chr19_GL949748v2_alt 
+                   7544                    5436                    3750 
+   chr19_GL949749v2_alt    chr19_GL949750v2_alt    chr19_GL949751v2_alt 
+                   3595                    3503                    3966 
+   chr19_GL949752v1_alt    chr19_GL949753v2_alt    chr19_KI270865v1_alt 
+                   8551                    5339                     286 
+   chr19_KI270866v1_alt    chr19_KI270867v1_alt    chr19_KI270868v1_alt 
+                    124                    1037                     558 
+   chr19_KI270882v1_alt    chr19_KI270883v1_alt    chr19_KI270884v1_alt 
+                   1684                    1637                    1315 
+   chr19_KI270885v1_alt    chr19_KI270886v1_alt    chr19_KI270887v1_alt 
+                   1647                    1493                    1742 
+   chr19_KI270888v1_alt    chr19_KI270889v1_alt    chr19_KI270890v1_alt 
+                   1257                    1642                    1252 
+   chr19_KI270891v1_alt    chr19_KI270914v1_alt    chr19_KI270915v1_alt 
+                   1642                    1529                    1641 
+   chr19_KI270916v1_alt    chr19_KI270917v1_alt    chr19_KI270918v1_alt 
+                   1252                    1972                    1010 
+   chr19_KI270919v1_alt    chr19_KI270920v1_alt    chr19_KI270921v1_alt 
+                   1642                    1987                    2077 
+   chr19_KI270922v1_alt    chr19_KI270923v1_alt    chr19_KI270929v1_alt 
+                   1964                    1742                    1953 
+   chr19_KI270930v1_alt    chr19_KI270931v1_alt    chr19_KI270932v1_alt 
+                   1615                    1619                    1638 
+   chr19_KI270933v1_alt    chr19_KI270938v1_alt                    chr2 
+                   1624                    9111                 1148679 
+    chr2_GL383521v1_alt     chr2_GL383522v1_alt     chr2_GL582966v2_alt 
+                    826                     635                     355 
+    chr2_KI270767v1_alt     chr2_KI270768v1_alt     chr2_KI270769v1_alt 
+                   1051                     595                     801 
+    chr2_KI270770v1_alt     chr2_KI270771v1_alt     chr2_KI270772v1_alt 
+                    959                     592                     693 
+    chr2_KI270773v1_alt     chr2_KI270774v1_alt     chr2_KI270775v1_alt 
+                    560                    1742                     574 
+    chr2_KI270776v1_alt     chr2_KI270893v1_alt     chr2_KI270894v1_alt 
+                   1230                    1049                     745 
+                  chr20    chr20_GL383577v2_alt    chr20_KI270869v1_alt 
+                 304255                     982                     769 
+   chr20_KI270870v1_alt    chr20_KI270871v1_alt                   chr21 
+                    949                     396                  200252 
+   chr21_GL383578v2_alt    chr21_GL383579v2_alt    chr21_GL383580v2_alt 
+                    249                     867                     214 
+   chr21_GL383581v2_alt    chr21_KI270872v1_alt    chr21_KI270873v1_alt 
+                    454                     640                     870 
+   chr21_KI270874v1_alt                   chr22    chr22_GL383582v2_alt 
+                   1158                  195499                     734 
+   chr22_GL383583v2_alt    chr22_KB663609v1_alt chr22_KI270731v1_random 
+                    675                     380                       1 
+   chr22_KI270875v1_alt    chr22_KI270876v1_alt    chr22_KI270877v1_alt 
+                   1849                     839                     550 
+   chr22_KI270878v1_alt    chr22_KI270879v1_alt    chr22_KI270928v1_alt 
+                   1468                    2008                     883 
+                   chr3  chr3_GL000221v1_random     chr3_GL383526v1_alt 
+                 974907                      15                     846 
+    chr3_JH636055v2_alt     chr3_KI270777v1_alt     chr3_KI270778v1_alt 
+                   1138                     655                    1677 
+    chr3_KI270779v1_alt     chr3_KI270780v1_alt     chr3_KI270781v1_alt 
+                   2009                    2589                     833 
+    chr3_KI270782v1_alt     chr3_KI270783v1_alt     chr3_KI270784v1_alt 
+                   1015                     637                     646 
+    chr3_KI270895v1_alt     chr3_KI270924v1_alt     chr3_KI270934v1_alt 
+                   1749                    1760                    1752 
+    chr3_KI270935v1_alt     chr3_KI270936v1_alt     chr3_KI270937v1_alt 
+                   2000                    1740                    1758 
+                   chr4  chr4_GL000008v2_random     chr4_GL000257v2_alt 
+                1001423                    1209                    4078 
+    chr4_GL383527v1_alt     chr4_GL383528v1_alt     chr4_KI270785v1_alt 
+                   1010                    2123                     749 
+    chr4_KI270786v1_alt     chr4_KI270787v1_alt     chr4_KI270788v1_alt 
+                   3240                     634                     823 
+    chr4_KI270789v1_alt     chr4_KI270790v1_alt     chr4_KI270896v1_alt 
+                   1459                    1256                    4180 
+    chr4_KI270925v1_alt                    chr5  chr5_GL000208v1_random 
+                   7376                  876033                      15 
+    chr5_GL339449v2_alt     chr5_GL383530v1_alt     chr5_GL383531v1_alt 
+                   2019                     268                     839 
+    chr5_GL383532v1_alt     chr5_GL949742v1_alt     chr5_KI270791v1_alt 
+                    294                    1401                    1210 
+    chr5_KI270792v1_alt     chr5_KI270793v1_alt     chr5_KI270794v1_alt 
+                   1310                     758                     854 
+    chr5_KI270795v1_alt     chr5_KI270796v1_alt     chr5_KI270897v1_alt 
+                    723                     830                    1045 
+    chr5_KI270898v1_alt                    chr6     chr6_GL000250v2_alt 
+                    765                  907145                   27884 
+    chr6_GL000251v2_alt     chr6_GL000252v2_alt     chr6_GL000253v2_alt 
+                  61981                   52932                   54729 
+    chr6_GL000254v2_alt     chr6_GL000255v2_alt     chr6_GL000256v2_alt 
+                  47277                   59969                   55149 
+    chr6_GL383533v1_alt     chr6_KB021644v2_alt     chr6_KI270758v1_alt 
+                    492                    1508                    1625 
+    chr6_KI270797v1_alt     chr6_KI270798v1_alt     chr6_KI270799v1_alt 
+                    817                    1674                     905 
+    chr6_KI270800v1_alt     chr6_KI270801v1_alt     chr6_KI270802v1_alt 
+                   1351                    3223                     540 
+                   chr7     chr7_GL383534v2_alt     chr7_KI270803v1_alt 
+                 808358                     367                    6184 
+    chr7_KI270804v1_alt     chr7_KI270805v1_alt     chr7_KI270806v1_alt 
+                   1512                    1670                     852 
+    chr7_KI270807v1_alt     chr7_KI270808v1_alt     chr7_KI270809v1_alt 
+                   1105                    2011                    1092 
+    chr7_KI270899v1_alt                    chr8     chr8_KI270810v1_alt 
+                   1584                  758407                    1957 
+    chr8_KI270811v1_alt     chr8_KI270812v1_alt     chr8_KI270813v1_alt 
+                   2774                    1796                     533 
+    chr8_KI270814v1_alt     chr8_KI270815v1_alt     chr8_KI270816v1_alt 
+                   1083                     502                    1872 
+    chr8_KI270817v1_alt     chr8_KI270818v1_alt     chr8_KI270819v1_alt 
+                   1112                     884                     854 
+    chr8_KI270820v1_alt     chr8_KI270821v1_alt     chr8_KI270822v1_alt 
+                    158                    8774                    2275 
+    chr8_KI270900v1_alt     chr8_KI270901v1_alt     chr8_KI270926v1_alt 
+                   2590                    1908                    1694 
+                   chr9     chr9_GL383539v1_alt     chr9_GL383540v1_alt 
+                 596257                    1104                     285 
+    chr9_GL383541v1_alt     chr9_GL383542v1_alt  chr9_KI270718v1_random 
+                    748                     396                       1 
+ chr9_KI270719v1_random     chr9_KI270823v1_alt                    chrM 
+                      7                    2250                     150 
+       chrUn_GL000195v1        chrUn_GL000214v1        chrUn_GL000218v1 
+                     47                      18                      20 
+       chrUn_GL000219v1        chrUn_GL000220v1        chrUn_GL000224v1 
+                    121                      34                      11 
+       chrUn_GL000226v1        chrUn_KI270742v1        chrUn_KI270743v1 
+                     53                     652                       7 
+       chrUn_KI270744v1                    chrX     chrX_KI270880v1_alt 
+                     41                  522900                    2458 
+    chrX_KI270881v1_alt     chrX_KI270913v1_alt                    chrY 
+                    763                    2389                   37563 
+Only keeping chrs 1-22, X, Y
+
+      deletion         in-del      insertion microsatellite            mnp 
+        842112          17400         660894           3871            326 
+        single 
+      12795450 
+Only keeping class 'single'
+Computing MAF
+Instantiating object
+Reading file
+
+                   chr1     chr1_GL383518v1_alt     chr1_GL383519v1_alt 
+                1081170                     501                     250 
+    chr1_GL383520v2_alt  chr1_KI270706v1_random  chr1_KI270707v1_random 
+                   1759                     761                       2 
+ chr1_KI270708v1_random  chr1_KI270710v1_random  chr1_KI270712v1_random 
+                      6                       2                      10 
+ chr1_KI270714v1_random     chr1_KI270759v1_alt     chr1_KI270760v1_alt 
+                     12                    2785                     779 
+    chr1_KI270761v1_alt     chr1_KI270762v1_alt     chr1_KI270763v1_alt 
+                   1312                    1327                    2697 
+    chr1_KI270764v1_alt     chr1_KI270765v1_alt     chr1_KI270766v1_alt 
+                    252                     114                     758 
+    chr1_KI270892v1_alt                   chr10    chr10_GL383545v1_alt 
+                   1312                  694386                    1131 
+   chr10_GL383546v1_alt    chr10_KI270824v1_alt    chr10_KI270825v1_alt 
+                   1636                    1730                     850 
+                  chr11    chr11_GL383547v1_alt    chr11_JH159136v1_alt 
+                 682062                    1037                    1126 
+   chr11_JH159137v1_alt    chr11_KI270826v1_alt    chr11_KI270827v1_alt 
+                   1109                    1456                     322 
+   chr11_KI270829v1_alt    chr11_KI270830v1_alt    chr11_KI270831v1_alt 
+                   1658                    1233                    1533 
+   chr11_KI270832v1_alt    chr11_KI270902v1_alt    chr11_KI270903v1_alt 
+                   1409                     701                    1448 
+   chr11_KI270927v1_alt                   chr12    chr12_GL383549v1_alt 
+                   1477                  656106                     600 
+   chr12_GL383550v2_alt    chr12_GL383551v1_alt    chr12_GL383552v1_alt 
+                    920                    1050                     599 
+   chr12_GL383553v2_alt    chr12_GL877875v1_alt    chr12_GL877876v1_alt 
+                    885                     937                    2363 
+   chr12_KI270833v1_alt    chr12_KI270834v1_alt    chr12_KI270835v1_alt 
+                    460                     613                    1475 
+   chr12_KI270836v1_alt    chr12_KI270837v1_alt    chr12_KI270904v1_alt 
+                    378                     218                    3299 
+                  chr13    chr13_KI270838v1_alt    chr13_KI270839v1_alt 
+                 498814                    2130                    1011 
+   chr13_KI270840v1_alt    chr13_KI270841v1_alt    chr13_KI270842v1_alt 
+                   1835                     883                     259 
+   chr13_KI270843v1_alt                   chr14 chr14_GL000009v2_random 
+                    731                  452299                    1360 
+chr14_GL000194v1_random chr14_GL000225v1_random chr14_KI270726v1_random 
+                     63                       2                      34 
+   chr14_KI270844v1_alt    chr14_KI270845v1_alt    chr14_KI270846v1_alt 
+                   1546                    1258                   11070 
+   chr14_KI270847v1_alt                   chr15    chr15_GL383554v1_alt 
+                   7700                  409805                     366 
+   chr15_GL383555v2_alt chr15_KI270727v1_random    chr15_KI270848v1_alt 
+                   1974                      16                    1800 
+   chr15_KI270849v1_alt    chr15_KI270850v1_alt    chr15_KI270851v1_alt 
+                   1309                     633                     588 
+   chr15_KI270852v1_alt    chr15_KI270905v1_alt    chr15_KI270906v1_alt 
+                   1193                   20021                     759 
+                  chr16    chr16_GL383556v1_alt    chr16_GL383557v1_alt 
+                 434518                    1195                     380 
+chr16_KI270728v1_random    chr16_KI270853v1_alt    chr16_KI270854v1_alt 
+                     53                    8804                     655 
+   chr16_KI270855v1_alt    chr16_KI270856v1_alt                   chr17 
+                    942                     469                  383401 
+chr17_GL000205v2_random    chr17_GL000258v2_alt    chr17_GL383563v3_alt 
+                     19                    6434                    2053 
+   chr17_GL383564v2_alt    chr17_GL383565v1_alt    chr17_GL383566v1_alt 
+                    494                    1080                     555 
+   chr17_JH159146v1_alt    chr17_JH159147v1_alt    chr17_JH159148v1_alt 
+                   2283                     604                     668 
+   chr17_KI270857v1_alt    chr17_KI270858v1_alt    chr17_KI270859v1_alt 
+                  11429                    1093                     711 
+   chr17_KI270860v1_alt    chr17_KI270861v1_alt    chr17_KI270862v1_alt 
+                   1547                    1123                    2859 
+   chr17_KI270907v1_alt    chr17_KI270908v1_alt    chr17_KI270909v1_alt 
+                   1219                    7025                    1114 
+   chr17_KI270910v1_alt                   chr18    chr18_GL383567v1_alt 
+                   1135                  392261                    1679 
+   chr18_GL383568v1_alt    chr18_GL383569v1_alt    chr18_GL383570v1_alt 
+                    769                    1285                    1024 
+   chr18_GL383571v1_alt    chr18_GL383572v1_alt    chr18_KI270863v1_alt 
+                    527                     883                    1172 
+   chr18_KI270864v1_alt    chr18_KI270911v1_alt    chr18_KI270912v1_alt 
+                    641                     879                    1450 
+                  chr19    chr19_GL000209v2_alt    chr19_GL383573v1_alt 
+                 324636                    1168                    3233 
+   chr19_GL383574v1_alt    chr19_GL383575v2_alt    chr19_GL383576v1_alt 
+                    522                    1059                    1165 
+   chr19_GL949746v1_alt    chr19_GL949747v2_alt    chr19_GL949748v2_alt 
+                   7474                    5444                    3836 
+   chr19_GL949749v2_alt    chr19_GL949750v2_alt    chr19_GL949751v2_alt 
+                   3591                    3510                    3957 
+   chr19_GL949752v1_alt    chr19_GL949753v2_alt    chr19_KI270865v1_alt 
+                   8490                    5347                     283 
+   chr19_KI270866v1_alt    chr19_KI270867v1_alt    chr19_KI270868v1_alt 
+                    126                    1042                     553 
+   chr19_KI270882v1_alt    chr19_KI270883v1_alt    chr19_KI270884v1_alt 
+                   1668                    1623                    1311 
+   chr19_KI270885v1_alt    chr19_KI270886v1_alt    chr19_KI270887v1_alt 
+                   1633                    1478                    1731 
+   chr19_KI270888v1_alt    chr19_KI270889v1_alt    chr19_KI270890v1_alt 
+                   1252                    1628                    1253 
+   chr19_KI270891v1_alt    chr19_KI270914v1_alt    chr19_KI270915v1_alt 
+                   1628                    1515                    1628 
+   chr19_KI270916v1_alt    chr19_KI270917v1_alt    chr19_KI270918v1_alt 
+                   1254                    1963                     998 
+   chr19_KI270919v1_alt    chr19_KI270920v1_alt    chr19_KI270921v1_alt 
+                   1629                    1981                    2075 
+   chr19_KI270922v1_alt    chr19_KI270923v1_alt    chr19_KI270929v1_alt 
+                   1956                    1746                    1944 
+   chr19_KI270930v1_alt    chr19_KI270931v1_alt    chr19_KI270932v1_alt 
+                   1602                    1605                    1625 
+   chr19_KI270933v1_alt    chr19_KI270938v1_alt                    chr2 
+                   1611                    9420                 1153942 
+    chr2_GL383521v1_alt     chr2_GL383522v1_alt     chr2_GL582966v2_alt 
+                    857                     638                     352 
+    chr2_KI270767v1_alt     chr2_KI270768v1_alt     chr2_KI270769v1_alt 
+                   1056                     603                     800 
+    chr2_KI270770v1_alt     chr2_KI270771v1_alt     chr2_KI270772v1_alt 
+                    964                     592                     742 
+    chr2_KI270773v1_alt     chr2_KI270774v1_alt     chr2_KI270775v1_alt 
+                    563                    1729                     576 
+    chr2_KI270776v1_alt     chr2_KI270893v1_alt     chr2_KI270894v1_alt 
+                   1233                    1054                     793 
+                  chr20    chr20_GL383577v2_alt    chr20_KI270869v1_alt 
+                 304716                     983                     765 
+   chr20_KI270870v1_alt    chr20_KI270871v1_alt                   chr21 
+                    948                     401                  200954 
+   chr21_GL383578v2_alt    chr21_GL383579v2_alt    chr21_GL383580v2_alt 
+                    249                     867                     215 
+   chr21_GL383581v2_alt    chr21_KI270872v1_alt    chr21_KI270873v1_alt 
+                    458                     638                     869 
+   chr21_KI270874v1_alt                   chr22    chr22_GL383582v2_alt 
+                   1173                  196175                     763 
+   chr22_GL383583v2_alt    chr22_KB663609v1_alt chr22_KI270731v1_random 
+                    678                     375                       2 
+   chr22_KI270875v1_alt    chr22_KI270876v1_alt    chr22_KI270877v1_alt 
+                   1832                     842                     543 
+   chr22_KI270878v1_alt    chr22_KI270879v1_alt    chr22_KI270928v1_alt 
+                   1473                    2090                     899 
+                   chr3  chr3_GL000221v1_random     chr3_GL383526v1_alt 
+                 979021                      15                     847 
+    chr3_JH636055v2_alt     chr3_KI270777v1_alt     chr3_KI270778v1_alt 
+                   1143                     661                    1680 
+    chr3_KI270779v1_alt     chr3_KI270780v1_alt     chr3_KI270781v1_alt 
+                   2101                    2601                     834 
+    chr3_KI270782v1_alt     chr3_KI270783v1_alt     chr3_KI270784v1_alt 
+                   1017                     643                     654 
+    chr3_KI270895v1_alt     chr3_KI270924v1_alt     chr3_KI270934v1_alt 
+                   1844                    1854                    1847 
+    chr3_KI270935v1_alt     chr3_KI270936v1_alt     chr3_KI270937v1_alt 
+                   2093                    1835                    1853 
+                   chr4  chr4_GL000008v2_random     chr4_GL000257v2_alt 
+                1006011                    1229                    4136 
+    chr4_GL383527v1_alt     chr4_GL383528v1_alt     chr4_KI270785v1_alt 
+                   1012                    2126                     750 
+    chr4_KI270786v1_alt     chr4_KI270787v1_alt     chr4_KI270788v1_alt 
+                   3245                     644                     827 
+    chr4_KI270789v1_alt     chr4_KI270790v1_alt     chr4_KI270896v1_alt 
+                   1459                    1257                    4216 
+    chr4_KI270925v1_alt                    chr5  chr5_GL000208v1_random 
+                   7381                  879938                      15 
+    chr5_GL339449v2_alt     chr5_GL383530v1_alt     chr5_GL383531v1_alt 
+                   2174                     270                     848 
+    chr5_GL383532v1_alt     chr5_GL949742v1_alt     chr5_KI270791v1_alt 
+                    308                    1403                    1214 
+    chr5_KI270792v1_alt     chr5_KI270793v1_alt     chr5_KI270794v1_alt 
+                   1326                     757                     857 
+    chr5_KI270795v1_alt     chr5_KI270796v1_alt     chr5_KI270897v1_alt 
+                    743                     833                    1122 
+    chr5_KI270898v1_alt                    chr6     chr6_GL000250v2_alt 
+                    784                  911632                   28668 
+    chr6_GL000251v2_alt     chr6_GL000252v2_alt     chr6_GL000253v2_alt 
+                  65121                   54438                   56211 
+    chr6_GL000254v2_alt     chr6_GL000255v2_alt     chr6_GL000256v2_alt 
+                  48606                   61879                   56604 
+    chr6_GL383533v1_alt     chr6_KB021644v2_alt     chr6_KI270758v1_alt 
+                    500                    1512                    1667 
+    chr6_KI270797v1_alt     chr6_KI270798v1_alt     chr6_KI270799v1_alt 
+                    819                    1671                     918 
+    chr6_KI270800v1_alt     chr6_KI270801v1_alt     chr6_KI270802v1_alt 
+                   1355                    3241                     541 
+                   chr7     chr7_GL383534v2_alt     chr7_KI270803v1_alt 
+                 812524                     367                    6642 
+    chr7_KI270804v1_alt     chr7_KI270805v1_alt     chr7_KI270806v1_alt 
+                   1521                    1678                     861 
+    chr7_KI270807v1_alt     chr7_KI270808v1_alt     chr7_KI270809v1_alt 
+                   1108                    2011                    1149 
+    chr7_KI270899v1_alt                    chr8     chr8_KI270810v1_alt 
+                   1600                  761332                    1975 
+    chr8_KI270811v1_alt     chr8_KI270812v1_alt     chr8_KI270813v1_alt 
+                   2775                    1798                     553 
+    chr8_KI270814v1_alt     chr8_KI270815v1_alt     chr8_KI270816v1_alt 
+                   1085                     507                    1860 
+    chr8_KI270817v1_alt     chr8_KI270818v1_alt     chr8_KI270819v1_alt 
+                   1112                     884                     853 
+    chr8_KI270820v1_alt     chr8_KI270821v1_alt     chr8_KI270822v1_alt 
+                    159                    8916                    2291 
+    chr8_KI270900v1_alt     chr8_KI270901v1_alt     chr8_KI270926v1_alt 
+                   2592                    1916                    1694 
+                   chr9     chr9_GL383539v1_alt     chr9_GL383540v1_alt 
+                 599071                    1104                     287 
+    chr9_GL383541v1_alt     chr9_GL383542v1_alt  chr9_KI270718v1_random 
+                    745                     396                       1 
+ chr9_KI270719v1_random     chr9_KI270823v1_alt                    chrM 
+                      7                    2259                     145 
+       chrUn_GL000195v1        chrUn_GL000214v1        chrUn_GL000218v1 
+                     47                      18                      20 
+       chrUn_GL000219v1        chrUn_GL000220v1        chrUn_GL000224v1 
+                    121                      34                      11 
+       chrUn_GL000226v1        chrUn_KI270742v1        chrUn_KI270743v1 
+                     53                     654                       7 
+       chrUn_KI270744v1                    chrX     chrX_KI270880v1_alt 
+                     44                  524378                    3522 
+    chrX_KI270881v1_alt     chrX_KI270913v1_alt                    chrY 
+                    766                    3454                   37600 
+Only keeping chrs 1-22, X, Y
+
+      deletion         in-del      insertion microsatellite            mnp 
+        875490          17577         674612           3871            326 
+        single 
+      12804876 
+Only keeping class 'single'
+Computing MAF
+Instantiating object
+Reading file
+
+                   chr1     chr1_GL383518v1_alt     chr1_GL383519v1_alt 
+                1080458                     470                     249 
+    chr1_GL383520v2_alt  chr1_KI270706v1_random  chr1_KI270707v1_random 
+                   1408                     825                       3 
+ chr1_KI270708v1_random  chr1_KI270709v1_random  chr1_KI270710v1_random 
+                     11                       4                      10 
+ chr1_KI270711v1_random  chr1_KI270712v1_random  chr1_KI270713v1_random 
+                      1                      16                       2 
+ chr1_KI270714v1_random     chr1_KI270759v1_alt     chr1_KI270760v1_alt 
+                     13                     634                     769 
+    chr1_KI270761v1_alt     chr1_KI270762v1_alt     chr1_KI270763v1_alt 
+                   1109                    1223                    2670 
+    chr1_KI270764v1_alt     chr1_KI270765v1_alt     chr1_KI270766v1_alt 
+                    253                     100                     711 
+    chr1_KI270892v1_alt                   chr10    chr10_GL383545v1_alt 
+                   1109                  693692                     741 
+   chr10_GL383546v1_alt    chr10_KI270824v1_alt    chr10_KI270825v1_alt 
+                   1491                    1525                     849 
+                  chr11    chr11_GL383547v1_alt    chr11_JH159136v1_alt 
+                 681338                    1032                    1028 
+   chr11_JH159137v1_alt    chr11_KI270826v1_alt    chr11_KI270827v1_alt 
+                   1011                    1431                     257 
+   chr11_KI270829v1_alt    chr11_KI270830v1_alt    chr11_KI270831v1_alt 
+                   1603                    1195                    1487 
+   chr11_KI270832v1_alt    chr11_KI270902v1_alt    chr11_KI270903v1_alt 
+                   1368                     700                    1335 
+   chr11_KI270927v1_alt                   chr12    chr12_GL383549v1_alt 
+                   1411                  656624                     601 
+   chr12_GL383550v2_alt    chr12_GL383551v1_alt    chr12_GL383552v1_alt 
+                    874                     965                     590 
+   chr12_GL383553v2_alt    chr12_GL877875v1_alt    chr12_GL877876v1_alt 
+                    828                     882                    2300 
+   chr12_KI270833v1_alt    chr12_KI270834v1_alt    chr12_KI270835v1_alt 
+                    419                     614                     892 
+   chr12_KI270836v1_alt    chr12_KI270837v1_alt    chr12_KI270904v1_alt 
+                    378                     236                    2841 
+                  chr13    chr13_KI270838v1_alt    chr13_KI270839v1_alt 
+                 498819                    2062                    1036 
+   chr13_KI270840v1_alt    chr13_KI270841v1_alt    chr13_KI270842v1_alt 
+                   1830                     884                     161 
+   chr13_KI270843v1_alt                   chr14 chr14_GL000009v2_random 
+                    730                  452242                    1753 
+chr14_GL000194v1_random chr14_GL000225v1_random chr14_KI270722v1_random 
+                     87                       3                       6 
+chr14_KI270723v1_random chr14_KI270725v1_random chr14_KI270726v1_random 
+                      2                       2                      34 
+   chr14_KI270844v1_alt    chr14_KI270845v1_alt    chr14_KI270846v1_alt 
+                   1548                    1258                   10669 
+   chr14_KI270847v1_alt                   chr15    chr15_GL383554v1_alt 
+                   7658                  409579                     283 
+   chr15_GL383555v2_alt chr15_KI270727v1_random    chr15_KI270848v1_alt 
+                   1963                      15                    1794 
+   chr15_KI270849v1_alt    chr15_KI270850v1_alt    chr15_KI270851v1_alt 
+                   1120                     598                     437 
+   chr15_KI270852v1_alt    chr15_KI270905v1_alt    chr15_KI270906v1_alt 
+                    855                   18632                     749 
+                  chr16    chr16_GL383556v1_alt    chr16_GL383557v1_alt 
+                 434281                    1025                     333 
+chr16_KI270728v1_random    chr16_KI270853v1_alt    chr16_KI270854v1_alt 
+                     64                    8066                     612 
+   chr16_KI270855v1_alt    chr16_KI270856v1_alt                   chr17 
+                    941                     456                  383658 
+chr17_GL000205v2_random    chr17_GL000258v2_alt    chr17_GL383563v3_alt 
+                     24                    6019                    1965 
+   chr17_GL383564v2_alt    chr17_GL383565v1_alt    chr17_GL383566v1_alt 
+                    665                    1081                     316 
+   chr17_JH159146v1_alt    chr17_JH159147v1_alt    chr17_JH159148v1_alt 
+                   1825                     414                     545 
+   chr17_KI270857v1_alt    chr17_KI270858v1_alt    chr17_KI270859v1_alt 
+                  10762                    1093                     717 
+   chr17_KI270860v1_alt    chr17_KI270861v1_alt    chr17_KI270862v1_alt 
+                   1618                    1081                    2657 
+   chr17_KI270907v1_alt    chr17_KI270908v1_alt    chr17_KI270909v1_alt 
+                   1218                    6922                     624 
+   chr17_KI270910v1_alt                   chr18    chr18_GL383567v1_alt 
+                   1079                  392532                    1401 
+   chr18_GL383568v1_alt    chr18_GL383569v1_alt    chr18_GL383570v1_alt 
+                    771                    1164                    1026 
+   chr18_GL383571v1_alt    chr18_GL383572v1_alt    chr18_KI270863v1_alt 
+                    527                     568                     946 
+   chr18_KI270864v1_alt    chr18_KI270911v1_alt    chr18_KI270912v1_alt 
+                    643                     574                    1329 
+                  chr19    chr19_GL000209v2_alt    chr19_GL383573v1_alt 
+                 325232                     780                    3242 
+   chr19_GL383574v1_alt    chr19_GL383575v2_alt    chr19_GL383576v1_alt 
+                    525                     918                    1003 
+   chr19_GL949746v1_alt    chr19_GL949747v2_alt    chr19_GL949748v2_alt 
+                   6964                    4752                    3341 
+   chr19_GL949749v2_alt    chr19_GL949750v2_alt    chr19_GL949751v2_alt 
+                   3094                    3297                    3424 
+   chr19_GL949752v1_alt    chr19_GL949753v2_alt    chr19_KI270865v1_alt 
+                   7794                    5071                     283 
+   chr19_KI270866v1_alt    chr19_KI270867v1_alt    chr19_KI270868v1_alt 
+                    126                     831                     553 
+   chr19_KI270882v1_alt    chr19_KI270883v1_alt    chr19_KI270884v1_alt 
+                   1814                    1771                    1382 
+   chr19_KI270885v1_alt    chr19_KI270886v1_alt    chr19_KI270887v1_alt 
+                   1780                    1607                    1782 
+   chr19_KI270888v1_alt    chr19_KI270889v1_alt    chr19_KI270890v1_alt 
+                   1406                    1775                    1305 
+   chr19_KI270891v1_alt    chr19_KI270914v1_alt    chr19_KI270915v1_alt 
+                   1775                    1545                    1776 
+   chr19_KI270916v1_alt    chr19_KI270917v1_alt    chr19_KI270918v1_alt 
+                   1304                    2113                    1108 
+   chr19_KI270919v1_alt    chr19_KI270920v1_alt    chr19_KI270921v1_alt 
+                   1776                    2132                     935 
+   chr19_KI270922v1_alt    chr19_KI270923v1_alt    chr19_KI270929v1_alt 
+                   2106                    1870                    2091 
+   chr19_KI270930v1_alt    chr19_KI270931v1_alt    chr19_KI270932v1_alt 
+                   1721                    1738                    1544 
+   chr19_KI270933v1_alt    chr19_KI270938v1_alt                    chr2 
+                   1759                    9310                 1153411 
+    chr2_GL383521v1_alt     chr2_GL383522v1_alt     chr2_GL582966v2_alt 
+                    848                     643                     352 
+    chr2_KI270767v1_alt     chr2_KI270768v1_alt     chr2_KI270769v1_alt 
+                    731                     604                     768 
+    chr2_KI270770v1_alt     chr2_KI270771v1_alt     chr2_KI270772v1_alt 
+                    783                     592                     837 
+    chr2_KI270773v1_alt     chr2_KI270774v1_alt     chr2_KI270775v1_alt 
+                    566                    1657                     577 
+    chr2_KI270776v1_alt     chr2_KI270893v1_alt     chr2_KI270894v1_alt 
+                   1119                     719                     900 
+                  chr20    chr20_GL383577v2_alt    chr20_KI270869v1_alt 
+                 305041                     730                     744 
+   chr20_KI270870v1_alt    chr20_KI270871v1_alt                   chr21 
+                    913                     359                  200783 
+   chr21_GL383578v2_alt    chr21_GL383579v2_alt    chr21_GL383580v2_alt 
+                    254                     680                     215 
+   chr21_GL383581v2_alt    chr21_KI270872v1_alt    chr21_KI270873v1_alt 
+                    459                     638                     832 
+   chr21_KI270874v1_alt                   chr22    chr22_GL383582v2_alt 
+                    729                  196003                     738 
+   chr22_GL383583v2_alt    chr22_KB663609v1_alt chr22_KI270731v1_random 
+                    465                     331                       6 
+chr22_KI270733v1_random chr22_KI270738v1_random    chr22_KI270875v1_alt 
+                      3                       7                    1610 
+   chr22_KI270876v1_alt    chr22_KI270877v1_alt    chr22_KI270878v1_alt 
+                    841                     519                    1331 
+   chr22_KI270879v1_alt    chr22_KI270928v1_alt                    chr3 
+                   1876                     887                  979783 
+ chr3_GL000221v1_random     chr3_GL383526v1_alt     chr3_JH636055v2_alt 
+                     30                     670                     899 
+    chr3_KI270777v1_alt     chr3_KI270778v1_alt     chr3_KI270779v1_alt 
+                    642                    1681                    1099 
+    chr3_KI270780v1_alt     chr3_KI270781v1_alt     chr3_KI270782v1_alt 
+                   2206                     503                     803 
+    chr3_KI270783v1_alt     chr3_KI270784v1_alt     chr3_KI270895v1_alt 
+                    644                     650                    1936 
+    chr3_KI270924v1_alt     chr3_KI270934v1_alt     chr3_KI270935v1_alt 
+                   2036                    1941                    2235 
+    chr3_KI270936v1_alt     chr3_KI270937v1_alt                    chr4 
+                   2014                    2032                 1006025 
+ chr4_GL000008v2_random     chr4_GL000257v2_alt     chr4_GL383527v1_alt 
+                   1380                    4062                     868 
+    chr4_GL383528v1_alt     chr4_KI270785v1_alt     chr4_KI270786v1_alt 
+                   1383                     712                    2500 
+    chr4_KI270787v1_alt     chr4_KI270788v1_alt     chr4_KI270789v1_alt 
+                    644                     825                    1181 
+    chr4_KI270790v1_alt     chr4_KI270896v1_alt     chr4_KI270925v1_alt 
+                   1259                    3180                    6141 
+                   chr5  chr5_GL000208v1_random     chr5_GL339449v2_alt 
+                 879927                      15                    2021 
+    chr5_GL383530v1_alt     chr5_GL383531v1_alt     chr5_GL383532v1_alt 
+                     48                     828                     290 
+    chr5_GL949742v1_alt     chr5_KI270791v1_alt     chr5_KI270792v1_alt 
+                    949                    1396                    1229 
+    chr5_KI270793v1_alt     chr5_KI270794v1_alt     chr5_KI270795v1_alt 
+                    626                     857                     599 
+    chr5_KI270796v1_alt     chr5_KI270897v1_alt     chr5_KI270898v1_alt 
+                    833                    1075                     557 
+                   chr6     chr6_GL000250v2_alt     chr6_GL000251v2_alt 
+                 912996                   27861                   52305 
+    chr6_GL000252v2_alt     chr6_GL000253v2_alt     chr6_GL000254v2_alt 
+                  50739                   54108                   46130 
+    chr6_GL000255v2_alt     chr6_GL000256v2_alt     chr6_GL383533v1_alt 
+                  58090                   51995                     415 
+    chr6_KB021644v2_alt     chr6_KI270758v1_alt     chr6_KI270797v1_alt 
+                   1213                    1669                     766 
+    chr6_KI270798v1_alt     chr6_KI270799v1_alt     chr6_KI270800v1_alt 
+                   1273                     920                    1356 
+    chr6_KI270801v1_alt     chr6_KI270802v1_alt                    chr7 
+                   2972                     412                  811697 
+    chr7_GL383534v2_alt     chr7_KI270803v1_alt     chr7_KI270804v1_alt 
+                    369                    4172                    1195 
+    chr7_KI270805v1_alt     chr7_KI270806v1_alt     chr7_KI270807v1_alt 
+                   1537                     578                    1108 
+    chr7_KI270808v1_alt     chr7_KI270809v1_alt     chr7_KI270899v1_alt 
+                   2010                     834                    1253 
+                   chr8     chr8_KI270810v1_alt     chr8_KI270811v1_alt 
+                 760837                    1971                    2624 
+    chr8_KI270812v1_alt     chr8_KI270813v1_alt     chr8_KI270814v1_alt 
+                   1735                     462                    1083 
+    chr8_KI270815v1_alt     chr8_KI270816v1_alt     chr8_KI270817v1_alt 
+                    375                    1701                     980 
+    chr8_KI270818v1_alt     chr8_KI270819v1_alt     chr8_KI270820v1_alt 
+                    804                     745                     159 
+    chr8_KI270821v1_alt     chr8_KI270822v1_alt     chr8_KI270900v1_alt 
+                   8531                    2290                    2452 
+    chr8_KI270901v1_alt     chr8_KI270926v1_alt                    chr9 
+                   1643                    1341                  599273 
+    chr9_GL383539v1_alt     chr9_GL383540v1_alt     chr9_GL383541v1_alt 
+                   1106                     277                     588 
+    chr9_GL383542v1_alt  chr9_KI270718v1_random  chr9_KI270719v1_random 
+                    398                       1                       8 
+    chr9_KI270823v1_alt                    chrM        chrUn_GL000195v1 
+                   2121                     142                      53 
+       chrUn_GL000214v1        chrUn_GL000216v2        chrUn_GL000218v1 
+                     21                       7                      44 
+       chrUn_GL000219v1        chrUn_GL000220v1        chrUn_GL000224v1 
+                    135                      35                      18 
+       chrUn_GL000226v1        chrUn_KI270435v1        chrUn_KI270438v1 
+                     48                       2                       5 
+       chrUn_KI270442v1        chrUn_KI270507v1        chrUn_KI270509v1 
+                     38                       1                       1 
+       chrUn_KI270510v1        chrUn_KI270512v1        chrUn_KI270519v1 
+                      1                       1                      29 
+       chrUn_KI270538v1        chrUn_KI270742v1        chrUn_KI270743v1 
+                      1                     978                      14 
+       chrUn_KI270744v1        chrUn_KI270746v1        chrUn_KI270751v1 
+                     46                       2                       3 
+       chrUn_KI270754v1                    chrX     chrX_KI270880v1_alt 
+                      3                  523780                    3088 
+    chrX_KI270881v1_alt     chrX_KI270913v1_alt                    chrY 
+                    777                    3011                   37630 
+Only keeping chrs 1-22, X, Y
+
+      deletion         in-del      insertion microsatellite            mnp 
+        892937          13696         676723           3844            330 
+         named         single 
+             8       12788103 
+Only keeping class 'single'
+Computing MAF
+Instantiating object
+Reading file
+
+                   chr1     chr1_GL383518v1_alt     chr1_GL383519v1_alt 
+                1084187                     470                     249 
+    chr1_GL383520v2_alt  chr1_KI270706v1_random  chr1_KI270707v1_random 
+                   1408                     825                       3 
+ chr1_KI270708v1_random  chr1_KI270709v1_random  chr1_KI270710v1_random 
+                     11                       4                      10 
+ chr1_KI270711v1_random  chr1_KI270712v1_random  chr1_KI270713v1_random 
+                      1                      16                       2 
+ chr1_KI270714v1_random     chr1_KI270759v1_alt     chr1_KI270760v1_alt 
+                     13                     635                     771 
+    chr1_KI270761v1_alt     chr1_KI270762v1_alt     chr1_KI270763v1_alt 
+                   1117                    1228                    2702 
+    chr1_KI270764v1_alt     chr1_KI270765v1_alt     chr1_KI270766v1_alt 
+                    253                     125                     722 
+    chr1_KI270892v1_alt                   chr10    chr10_GL383545v1_alt 
+                   1117                  695935                     741 
+   chr10_GL383546v1_alt    chr10_KI270824v1_alt    chr10_KI270825v1_alt 
+                   1492                    1529                     851 
+                  chr11    chr11_GL383547v1_alt    chr11_JH159136v1_alt 
+                 683457                    1037                    1029 
+   chr11_JH159137v1_alt    chr11_KI270826v1_alt    chr11_KI270827v1_alt 
+                   1012                    1432                     258 
+   chr11_KI270829v1_alt    chr11_KI270830v1_alt    chr11_KI270831v1_alt 
+                   1610                    1204                    1489 
+   chr11_KI270832v1_alt    chr11_KI270902v1_alt    chr11_KI270903v1_alt 
+                   1372                     701                    1340 
+   chr11_KI270927v1_alt                   chr12    chr12_GL383549v1_alt 
+                   1416                  667032                     601 
+   chr12_GL383550v2_alt    chr12_GL383551v1_alt    chr12_GL383552v1_alt 
+                    873                     966                     590 
+   chr12_GL383553v2_alt    chr12_GL877875v1_alt    chr12_GL877876v1_alt 
+                    827                     937                    2311 
+   chr12_KI270833v1_alt    chr12_KI270834v1_alt    chr12_KI270835v1_alt 
+                    420                     614                     891 
+   chr12_KI270836v1_alt    chr12_KI270837v1_alt    chr12_KI270904v1_alt 
+                    378                     249                    2868 
+                  chr13    chr13_KI270838v1_alt    chr13_KI270839v1_alt 
+                 499592                    2065                    1033 
+   chr13_KI270840v1_alt    chr13_KI270841v1_alt    chr13_KI270842v1_alt 
+                   1838                     885                     161 
+   chr13_KI270843v1_alt                   chr14 chr14_GL000009v2_random 
+                    731                  453396                    1754 
+chr14_GL000194v1_random chr14_GL000225v1_random chr14_KI270722v1_random 
+                     87                       3                       6 
+chr14_KI270723v1_random chr14_KI270725v1_random chr14_KI270726v1_random 
+                      2                       2                      34 
+   chr14_KI270844v1_alt    chr14_KI270845v1_alt    chr14_KI270846v1_alt 
+                   1548                    1258                   11016 
+   chr14_KI270847v1_alt                   chr15    chr15_GL383554v1_alt 
+                   7664                  410505                     296 
+   chr15_GL383555v2_alt chr15_KI270727v1_random    chr15_KI270848v1_alt 
+                   1963                      15                    1795 
+   chr15_KI270849v1_alt    chr15_KI270850v1_alt    chr15_KI270851v1_alt 
+                   1125                     613                     437 
+   chr15_KI270852v1_alt    chr15_KI270905v1_alt    chr15_KI270906v1_alt 
+                    856                   18827                     750 
+                  chr16    chr16_GL383556v1_alt    chr16_GL383557v1_alt 
+                 435450                    1029                     338 
+chr16_KI270728v1_random    chr16_KI270853v1_alt    chr16_KI270854v1_alt 
+                     70                    8123                     612 
+   chr16_KI270855v1_alt    chr16_KI270856v1_alt                   chr17 
+                    942                     457                  384746 
+chr17_GL000205v2_random    chr17_GL000258v2_alt    chr17_GL383563v3_alt 
+                     24                    6053                    1991 
+   chr17_GL383564v2_alt    chr17_GL383565v1_alt    chr17_GL383566v1_alt 
+                    644                    1083                     316 
+   chr17_JH159146v1_alt    chr17_JH159147v1_alt    chr17_JH159148v1_alt 
+                   1832                     413                     550 
+   chr17_KI270857v1_alt    chr17_KI270858v1_alt    chr17_KI270859v1_alt 
+                  10779                    1094                     718 
+   chr17_KI270860v1_alt    chr17_KI270861v1_alt    chr17_KI270862v1_alt 
+                   1599                    1086                    2667 
+   chr17_KI270907v1_alt    chr17_KI270908v1_alt    chr17_KI270909v1_alt 
+                   1228                    6960                     630 
+   chr17_KI270910v1_alt                   chr18    chr18_GL383567v1_alt 
+                   1082                  392889                    1401 
+   chr18_GL383568v1_alt    chr18_GL383569v1_alt    chr18_GL383570v1_alt 
+                    769                    1164                    1020 
+   chr18_GL383571v1_alt    chr18_GL383572v1_alt    chr18_KI270863v1_alt 
+                    527                     568                     947 
+   chr18_KI270864v1_alt    chr18_KI270911v1_alt    chr18_KI270912v1_alt 
+                    643                     574                    1329 
+                  chr19    chr19_GL000209v2_alt    chr19_GL383573v1_alt 
+                 325670                     778                    3244 
+   chr19_GL383574v1_alt    chr19_GL383575v2_alt    chr19_GL383576v1_alt 
+                    525                     918                     953 
+   chr19_GL949746v1_alt    chr19_GL949747v2_alt    chr19_GL949748v2_alt 
+                   6980                    4774                    3354 
+   chr19_GL949749v2_alt    chr19_GL949750v2_alt    chr19_GL949751v2_alt 
+                   3113                    3318                    3437 
+   chr19_GL949752v1_alt    chr19_GL949753v2_alt    chr19_KI270865v1_alt 
+                   7813                    5083                     283 
+   chr19_KI270866v1_alt    chr19_KI270867v1_alt    chr19_KI270868v1_alt 
+                    126                     844                     554 
+   chr19_KI270882v1_alt    chr19_KI270883v1_alt    chr19_KI270884v1_alt 
+                   1814                    1774                    1380 
+   chr19_KI270885v1_alt    chr19_KI270886v1_alt    chr19_KI270887v1_alt 
+                   1783                    1609                    1786 
+   chr19_KI270888v1_alt    chr19_KI270889v1_alt    chr19_KI270890v1_alt 
+                   1407                    1778                    1311 
+   chr19_KI270891v1_alt    chr19_KI270914v1_alt    chr19_KI270915v1_alt 
+                   1778                    1552                    1779 
+   chr19_KI270916v1_alt    chr19_KI270917v1_alt    chr19_KI270918v1_alt 
+                   1310                    2112                    1108 
+   chr19_KI270919v1_alt    chr19_KI270920v1_alt    chr19_KI270921v1_alt 
+                   1779                    2131                     940 
+   chr19_KI270922v1_alt    chr19_KI270923v1_alt    chr19_KI270929v1_alt 
+                   2105                    1867                    2090 
+   chr19_KI270930v1_alt    chr19_KI270931v1_alt    chr19_KI270932v1_alt 
+                   1723                    1739                    1547 
+   chr19_KI270933v1_alt    chr19_KI270938v1_alt                    chr2 
+                   1762                    9302                 1156034 
+    chr2_GL383521v1_alt     chr2_GL383522v1_alt     chr2_GL582966v2_alt 
+                    852                     644                     352 
+    chr2_KI270767v1_alt     chr2_KI270768v1_alt     chr2_KI270769v1_alt 
+                    735                     612                     768 
+    chr2_KI270770v1_alt     chr2_KI270771v1_alt     chr2_KI270772v1_alt 
+                    785                     593                     865 
+    chr2_KI270773v1_alt     chr2_KI270774v1_alt     chr2_KI270775v1_alt 
+                    566                    1657                     578 
+    chr2_KI270776v1_alt     chr2_KI270893v1_alt     chr2_KI270894v1_alt 
+                   1119                     723                     927 
+                  chr20    chr20_GL383577v2_alt    chr20_KI270869v1_alt 
+                 305434                     730                     745 
+   chr20_KI270870v1_alt    chr20_KI270871v1_alt                   chr21 
+                    914                     359                  201529 
+   chr21_GL383578v2_alt    chr21_GL383579v2_alt    chr21_GL383580v2_alt 
+                    254                     682                     215 
+   chr21_GL383581v2_alt    chr21_KI270872v1_alt    chr21_KI270873v1_alt 
+                    459                     640                     834 
+   chr21_KI270874v1_alt                   chr22    chr22_GL383582v2_alt 
+                    732                  196646                     738 
+   chr22_GL383583v2_alt    chr22_KB663609v1_alt chr22_KI270731v1_random 
+                    465                     331                       6 
+chr22_KI270733v1_random chr22_KI270738v1_random    chr22_KI270875v1_alt 
+                      3                       7                    1614 
+   chr22_KI270876v1_alt    chr22_KI270877v1_alt    chr22_KI270878v1_alt 
+                    842                     519                    1332 
+   chr22_KI270879v1_alt    chr22_KI270928v1_alt                    chr3 
+                   1884                     888                  981548 
+ chr3_GL000221v1_random     chr3_GL383526v1_alt     chr3_JH636055v2_alt 
+                     30                     670                     904 
+    chr3_KI270777v1_alt     chr3_KI270778v1_alt     chr3_KI270779v1_alt 
+                    655                    1681                    1120 
+    chr3_KI270780v1_alt     chr3_KI270781v1_alt     chr3_KI270782v1_alt 
+                   2213                     498                     814 
+    chr3_KI270783v1_alt     chr3_KI270784v1_alt     chr3_KI270895v1_alt 
+                    646                     660                    2060 
+    chr3_KI270924v1_alt     chr3_KI270934v1_alt     chr3_KI270935v1_alt 
+                   2166                    2065                    2365 
+    chr3_KI270936v1_alt     chr3_KI270937v1_alt                    chr4 
+                   2142                    2160                 1007839 
+ chr4_GL000008v2_random     chr4_GL000257v2_alt     chr4_GL383527v1_alt 
+                   1383                    4073                     870 
+    chr4_GL383528v1_alt     chr4_KI270785v1_alt     chr4_KI270786v1_alt 
+                   1386                     712                    2503 
+    chr4_KI270787v1_alt     chr4_KI270788v1_alt     chr4_KI270789v1_alt 
+                    644                     827                    1185 
+    chr4_KI270790v1_alt     chr4_KI270896v1_alt     chr4_KI270925v1_alt 
+                   1259                    3222                    6153 
+                   chr5  chr5_GL000208v1_random     chr5_GL339449v2_alt 
+                 881512                      15                    2024 
+    chr5_GL383530v1_alt     chr5_GL383531v1_alt     chr5_GL383532v1_alt 
+                     48                     830                     290 
+    chr5_GL949742v1_alt     chr5_KI270791v1_alt     chr5_KI270792v1_alt 
+                    950                    1404                    1230 
+    chr5_KI270793v1_alt     chr5_KI270794v1_alt     chr5_KI270795v1_alt 
+                    630                     859                     602 
+    chr5_KI270796v1_alt     chr5_KI270897v1_alt     chr5_KI270898v1_alt 
+                    834                    1079                     559 
+                   chr6     chr6_GL000250v2_alt     chr6_GL000251v2_alt 
+                 914475                   27971                   52473 
+    chr6_GL000252v2_alt     chr6_GL000253v2_alt     chr6_GL000254v2_alt 
+                  50894                   54269                   46260 
+    chr6_GL000255v2_alt     chr6_GL000256v2_alt     chr6_GL383533v1_alt 
+                  58238                   52150                     416 
+    chr6_KB021644v2_alt     chr6_KI270758v1_alt     chr6_KI270797v1_alt 
+                   1215                    1671                     767 
+    chr6_KI270798v1_alt     chr6_KI270799v1_alt     chr6_KI270800v1_alt 
+                   1273                     920                    1356 
+    chr6_KI270801v1_alt     chr6_KI270802v1_alt                    chr7 
+                   2974                     412                  814321 
+    chr7_GL383534v2_alt     chr7_KI270803v1_alt     chr7_KI270804v1_alt 
+                    369                    4192                    1197 
+    chr7_KI270805v1_alt     chr7_KI270806v1_alt     chr7_KI270807v1_alt 
+                   1541                     586                    1109 
+    chr7_KI270808v1_alt     chr7_KI270809v1_alt     chr7_KI270899v1_alt 
+                   2015                     862                    1255 
+                   chr8     chr8_KI270810v1_alt     chr8_KI270811v1_alt 
+                 762499                    1977                    2625 
+    chr8_KI270812v1_alt     chr8_KI270813v1_alt     chr8_KI270814v1_alt 
+                   1735                     483                    1085 
+    chr8_KI270815v1_alt     chr8_KI270816v1_alt     chr8_KI270817v1_alt 
+                    377                    1734                     981 
+    chr8_KI270818v1_alt     chr8_KI270819v1_alt     chr8_KI270820v1_alt 
+                    804                     747                     159 
+    chr8_KI270821v1_alt     chr8_KI270822v1_alt     chr8_KI270900v1_alt 
+                   8564                    2295                    2453 
+    chr8_KI270901v1_alt     chr8_KI270926v1_alt                    chr9 
+                   1646                    1343                  600719 
+    chr9_GL383539v1_alt     chr9_GL383540v1_alt     chr9_GL383541v1_alt 
+                   1107                     277                     589 
+    chr9_GL383542v1_alt  chr9_KI270718v1_random  chr9_KI270719v1_random 
+                    399                       1                       8 
+    chr9_KI270823v1_alt                    chrM        chrUn_GL000195v1 
+                   2127                     143                      53 
+       chrUn_GL000214v1        chrUn_GL000216v2        chrUn_GL000218v1 
+                     21                       7                      44 
+       chrUn_GL000219v1        chrUn_GL000220v1        chrUn_GL000224v1 
+                    135                      35                      18 
+       chrUn_GL000226v1        chrUn_KI270435v1        chrUn_KI270438v1 
+                     48                       2                       5 
+       chrUn_KI270442v1        chrUn_KI270507v1        chrUn_KI270509v1 
+                     38                       1                       1 
+       chrUn_KI270510v1        chrUn_KI270512v1        chrUn_KI270519v1 
+                      1                       1                      29 
+       chrUn_KI270538v1        chrUn_KI270742v1        chrUn_KI270743v1 
+                      1                     979                      14 
+       chrUn_KI270744v1        chrUn_KI270746v1        chrUn_KI270751v1 
+                     46                       2                       3 
+       chrUn_KI270754v1                    chrX     chrX_KI270880v1_alt 
+                      3                  529632                    3089 
+    chrX_KI270881v1_alt     chrX_KI270913v1_alt                    chrY 
+                    782                    3012                   38085 
+Only keeping chrs 1-22, X, Y
+
+      deletion         in-del      insertion microsatellite            mnp 
+        901836          56508         634706           3844            330 
+         named         single 
+             8       12825900 
+Only keeping class 'single'
+Computing MAF
+Instantiating object
+> 
+> 
+> proc.time()
+    user   system  elapsed 
+1538.145   68.130 1615.668 
