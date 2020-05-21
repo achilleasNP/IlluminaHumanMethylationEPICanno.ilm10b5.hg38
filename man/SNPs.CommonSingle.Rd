@@ -50,14 +50,12 @@ annotation package.
   UCSC Common SNP Table.
 }
 \examples{
+data(SNPs.151CommonSingle)
+data(SNPs.150CommonSingle)
 data(SNPs.147CommonSingle)
 data(SNPs.146CommonSingle)
 data(SNPs.144CommonSingle)
 data(SNPs.142CommonSingle)
 data(SNPs.141CommonSingle)
-data(SNPs.138CommonSingle)
-data(SNPs.137CommonSingle)
-data(SNPs.135CommonSingle)
-data(SNPs.132CommonSingle)
 }
 \keyword{datasets}

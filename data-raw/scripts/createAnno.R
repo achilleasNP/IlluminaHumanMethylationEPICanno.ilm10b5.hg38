@@ -1,17 +1,26 @@
+# The code for the manifest creation is based on the code included in the package
+# IlluminaHumanMethylationEPICanno.ilm10b4.hg19.
+# The raw data used are the input files listed below with the md5sums.:
+# de6945904b5b1d750ff5b76dba0b0840  MethylationEPIC_v-1-0_B5.csv
+# 3bb0678989318410489ce77173c7d236  minfiDataEPIC/inst/extdata/200144450021/200144450021_R05C01_Grn.idat
+# The idat file is from the minfiDataEpic package while the manifest file is from illumina 
+# (https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html)
 library(minfi)
-manifestFile <- "../../../IlluminaHumanMethylationEPIC_files/data/MethylationEPIC_v-1-0_B4.csv"
-if(!file.exists(manifestFile) || !file.exists("extdata")) {
+manifest.filepath <- "/restricted/projectnb/fhs-methylation/resources/manifest/MethylationEPIC_v-1-0_B5.csv"
+
+if(!file.exists(manifest.filepath) || !file.exists("objects")) {
     cat("Missing files, quitting\n")
     q(save = "no")
 }
 
-maniTmp <- minfi:::read.manifest.EPIC(manifestFile)
+maniTmp <- minfi:::read.manifest.EPIC(manifest.filepath)
 anno <- maniTmp$manifest
 manifestList <- maniTmp$manifestList
 
 ## Checking
 library(illuminaio)
-epic <- readIDAT("../../../IlluminaHumanMethylationEPIC_files/data/Demo_Data_EPIC/200144450018/200144450018_R04C01_Grn.idat")
+idat.filepath = "../../../minfiDataEPIC/inst/extdata/200144450018/200144450018_R04C01_Grn.idat"
+epic <- readIDAT(idat.filepath)
 address.epic <- as.character(epic$MidBlock)
 dropCpGs <- anno$Name[anno$AddressB != "" & !anno$AddressB %in% address.epic]
 dropCpGs <- anno$Name[anno$AddressA != "" & !anno$AddressA %in% address.epic]
@@ -19,13 +28,13 @@ table(substr(dropCpGs, 1,2))
 
 
 ## Manifest package
-IlluminaHumanMethylationEPICmanifest <- do.call(IlluminaMethylationManifest,
+IlluminaHumanMethylationEPICB5manifest <- do.call(IlluminaMethylationManifest,
                                                 list(TypeI = manifestList$TypeI,
                                                      TypeII = manifestList$TypeII,
                                                      TypeControl = manifestList$TypeControl,
                                                      TypeSnpI = manifestList$TypeSnpI,
                                                      TypeSnpII = manifestList$TypeSnpII,
-                                                     annotation = "IlluminaHumanMethylationEPIC"))
+                                                     annotation = "IlluminaHumanMethylationEPICB5"))
 ## Annotation package
 anno$IlmnID <- NULL
 nam <- names(anno)
@@ -38,7 +47,7 @@ nam[c("AddressA_ID", "AddressB_ID", "AlleleA_ProbeSeq", "AlleleB_ProbeSeq",
 names(nam) <- NULL
 names(anno) <- nam
 rownames(anno) <- anno$Name
-anno <- anno[getManifestInfo(IlluminaHumanMethylationEPICmanifest, type = "locusNames"),]
+anno <- anno[getManifestInfo(IlluminaHumanMethylationEPICB5manifest, type = "locusNames"),]
 
 Locations <- anno[, c("CHR", "MAPINFO")]
 names(Locations) <- c("chr", "pos")
@@ -87,37 +96,30 @@ map <- minfi:::.getProbePositionsDetailed(map)
 names(map) <- rownames(Locations)
 
 ## dbSNP
-load("extdata/grSnp147CommonSingle.rda")
-SNPs.147CommonSingle <- minfi:::.doSnpOverlap(map, grSnp147CommonSingle)
-load("extdata/grSnp146CommonSingle.rda")
-SNPs.146CommonSingle <- minfi:::.doSnpOverlap(map, grSnp146CommonSingle)
-load("extdata/grSnp144CommonSingle.rda")
-SNPs.144CommonSingle <- minfi:::.doSnpOverlap(map, grSnp144CommonSingle)
-load("extdata/grSnp142CommonSingle.rda")
-SNPs.142CommonSingle <- minfi:::.doSnpOverlap(map, grSnp142CommonSingle)
-load("extdata/grSnp141CommonSingle.rda")
-SNPs.141CommonSingle <- minfi:::.doSnpOverlap(map, grSnp141CommonSingle)
-load("extdata/grSnp138CommonSingle.rda")
-SNPs.138CommonSingle <- minfi:::.doSnpOverlap(map, grSnp138CommonSingle)
-load("extdata/grSnp137CommonSingle.rda")
-SNPs.137CommonSingle <- minfi:::.doSnpOverlap(map, grSnp137CommonSingle)
-load("extdata/grSnp135CommonSingle.rda")
-SNPs.135CommonSingle <- minfi:::.doSnpOverlap(map, grSnp135CommonSingle)
-load("extdata/grSnp132CommonSingle.rda")
-SNPs.132CommonSingle <- minfi:::.doSnpOverlap(map, grSnp132CommonSingle)
+snp.objects <- c()
+for (file in list.files("objects", pattern="*Single.rda")){
+    full.path <- file.path("objects", file)
+    load(full.path)
+    original.objname <- gsub("\\.rda", "", file)
+    objname <- gsub("grSnp", "SNPs.", original.objname)
+    snp.objects <- c(snp.objects, objname)
+    assign(objname, 
+	   minfi:::.doSnpOverlap(map, get(original.objname)))
+}
 
-annoNames <- c("Locations", "Manifest", "SNPs.Illumina", "SNPs.147CommonSingle", "SNPs.146CommonSingle",
-               "SNPs.144CommonSingle", "SNPs.142CommonSingle", "SNPs.141CommonSingle",
-               "SNPs.138CommonSingle", "SNPs.137CommonSingle", "SNPs.135CommonSingle",
-               "SNPs.132CommonSingle", "Islands.UCSC", "Other")
+
+
+annoNames <- c("Locations", "Manifest", "SNPs.Illumina", "Islands.UCSC", "Other",
+snp.objects)
+
 for(nam in annoNames) {
     cat(nam, "\n")
     save(list = nam, file = file.path("../../data", paste(nam, "rda", sep = ".")), compress = "xz")
 }
-annoStr <- c(array = "IlluminaHumanMethylationEPIC",
-             annotation = "ilm10b4",
-             genomeBuild = "hg19")
-defaults <- c("Locations", "Manifest", "SNPs.137CommonSingle", "Islands.UCSC", "Other")
+annoStr <- c(array = "IlluminaHumanMethylationEPICB5",
+             annotation = "ilm10b5",
+             genomeBuild = "hg38")
+defaults <- c("Locations", "Manifest", "SNPs.141CommonSingle", "Islands.UCSC", "Other")
 pkgName <- sprintf("%sanno.%s.%s", annoStr["array"], annoStr["annotation"],
                     annoStr["genomeBuild"])
 
