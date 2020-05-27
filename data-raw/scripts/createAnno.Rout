@@ -129,13 +129,13 @@ Setting options('GEOquery.inmemory.gpl'=FALSE)
 > 
 > 
 > ## Manifest package
-> IlluminaHumanMethylationEPICB5manifest <- do.call(IlluminaMethylationManifest,
+> IlluminaHumanMethylationEPICmanifest <- do.call(IlluminaMethylationManifest,
 +                                                 list(TypeI = manifestList$TypeI,
 +                                                      TypeII = manifestList$TypeII,
 +                                                      TypeControl = manifestList$TypeControl,
 +                                                      TypeSnpI = manifestList$TypeSnpI,
 +                                                      TypeSnpII = manifestList$TypeSnpII,
-+                                                      annotation = "IlluminaHumanMethylationEPICB5"))
++                                                      annotation = "IlluminaHumanMethylationEPIC"))
 > ## Annotation package
 > anno$IlmnID <- NULL
 > nam <- names(anno)
@@ -148,7 +148,7 @@ Setting options('GEOquery.inmemory.gpl'=FALSE)
 > names(nam) <- NULL
 > names(anno) <- nam
 > rownames(anno) <- anno$Name
-> anno <- anno[getManifestInfo(IlluminaHumanMethylationEPICB5manifest, type = "locusNames"),]
+> anno <- anno[getManifestInfo(IlluminaHumanMethylationEPICmanifest, type = "locusNames"),]
 > 
 > Locations <- anno[, c("CHR", "MAPINFO")]
 > names(Locations) <- c("chr", "pos")
@@ -276,7 +276,7 @@ SNPs.146CommonSingle
 SNPs.147CommonSingle 
 SNPs.150CommonSingle 
 SNPs.151CommonSingle 
-> annoStr <- c(array = "IlluminaHumanMethylationEPICB5",
+> annoStr <- c(array = "IlluminaHumanMethylationEPIC",
 +              annotation = "ilm10b5",
 +              genomeBuild = "hg38")
 > defaults <- c("Locations", "Manifest", "SNPs.141CommonSingle", "Islands.UCSC", "Other")
@@ -324,35 +324,34 @@ other attached packages:
 loaded via a namespace (and not attached):
  [1] nlme_3.1-143             bitops_1.0-6             bit64_0.9-7             
  [4] RColorBrewer_1.1-2       progress_1.2.2           httr_1.4.1              
- [7] tools_3.6.2              backports_1.1.5          doRNG_1.7.1             
-[10] nor1mix_1.3-0            R6_2.4.1                 HDF5Array_1.14.1        
-[13] DBI_1.1.0                withr_2.1.2              tidyselect_0.2.5        
-[16] prettyunits_1.1.0        base64_2.0               bit_1.1-15.1            
-[19] curl_4.3                 compiler_3.6.2           preprocessCore_1.48.0   
-[22] xml2_1.2.2               pkgmaker_0.27            rtracklayer_1.46.0      
-[25] readr_1.3.1              quadprog_1.5-8           genefilter_1.68.0       
-[28] askpass_1.1              rappdirs_0.3.1           stringr_1.4.0           
-[31] digest_0.6.23            Rsamtools_2.2.1          siggenes_1.60.0         
-[34] GEOquery_2.54.1          pkgconfig_2.0.3          scrime_1.3.5            
-[37] bibtex_0.4.2.2           dbplyr_1.4.2             limma_3.42.0            
-[40] rlang_0.4.2              RSQLite_2.2.0            DelayedMatrixStats_1.8.0
-[43] mclust_5.4.5             dplyr_0.8.3              RCurl_1.96-0            
-[46] magrittr_1.5             GenomeInfoDbData_1.2.2   Matrix_1.2-18           
-[49] Rcpp_1.0.3               Rhdf5lib_1.8.0           lifecycle_0.1.0         
-[52] stringi_1.4.5            MASS_7.3-51.5            zlibbioc_1.32.0         
-[55] rhdf5_2.30.1             plyr_1.8.5               BiocFileCache_1.10.2    
-[58] grid_3.6.2               blob_1.2.0               crayon_1.3.4            
-[61] lattice_0.20-38          splines_3.6.2            annotate_1.64.0         
-[64] multtest_2.42.0          GenomicFeatures_1.38.0   hms_0.5.3               
-[67] zeallot_0.1.0            beanplot_1.2             pillar_1.4.3            
-[70] rngtools_1.4             codetools_0.2-16         biomaRt_2.42.0          
-[73] XML_3.99-0.2             glue_1.3.1               data.table_1.12.8       
-[76] vctrs_0.2.1              tidyr_1.0.0              openssl_1.4.1           
-[79] purrr_0.3.3              reshape_0.8.8            assertthat_0.2.1        
-[82] xtable_1.8-4             survival_3.1-8           tibble_2.1.3            
-[85] GenomicAlignments_1.22.1 AnnotationDbi_1.48.0     registry_0.5-1          
-[88] memoise_1.1.0           
+ [7] tools_3.6.2              doRNG_1.7.1              nor1mix_1.3-0           
+[10] R6_2.4.1                 HDF5Array_1.14.1         DBI_1.1.0               
+[13] withr_2.1.2              tidyselect_1.1.0         prettyunits_1.1.0       
+[16] base64_2.0               bit_1.1-15.1             curl_4.3                
+[19] compiler_3.6.2           preprocessCore_1.48.0    xml2_1.2.2              
+[22] pkgmaker_0.27            rtracklayer_1.46.0       readr_1.3.1             
+[25] quadprog_1.5-8           genefilter_1.68.0        askpass_1.1             
+[28] rappdirs_0.3.1           stringr_1.4.0            digest_0.6.23           
+[31] Rsamtools_2.2.1          siggenes_1.60.0          GEOquery_2.54.1         
+[34] pkgconfig_2.0.3          scrime_1.3.5             bibtex_0.4.2.2          
+[37] dbplyr_1.4.2             limma_3.42.0             rlang_0.4.6             
+[40] RSQLite_2.2.0            DelayedMatrixStats_1.8.0 mclust_5.4.5            
+[43] dplyr_0.8.5              RCurl_1.96-0             magrittr_1.5            
+[46] GenomeInfoDbData_1.2.2   Matrix_1.2-18            Rcpp_1.0.3              
+[49] Rhdf5lib_1.8.0           lifecycle_0.2.0          stringi_1.4.5           
+[52] MASS_7.3-51.5            zlibbioc_1.32.0          rhdf5_2.30.1            
+[55] plyr_1.8.5               BiocFileCache_1.10.2     grid_3.6.2              
+[58] blob_1.2.0               crayon_1.3.4             lattice_0.20-38         
+[61] splines_3.6.2            annotate_1.64.0          multtest_2.42.0         
+[64] GenomicFeatures_1.38.0   hms_0.5.3                beanplot_1.2            
+[67] pillar_1.4.3             rngtools_1.4             codetools_0.2-16        
+[70] biomaRt_2.42.0           XML_3.99-0.2             glue_1.4.1              
+[73] data.table_1.12.8        vctrs_0.3.0              tidyr_1.0.0             
+[76] openssl_1.4.1            purrr_0.3.3              reshape_0.8.8           
+[79] assertthat_0.2.1         xtable_1.8-4             survival_3.1-8          
+[82] tibble_3.0.1             GenomicAlignments_1.22.1 AnnotationDbi_1.48.0    
+[85] registry_0.5-1           memoise_1.1.0            ellipsis_0.3.0          
 > q(save = "no")
 > proc.time()
-    user   system  elapsed 
-1114.762   27.272 1145.643 
+   user  system elapsed 
+936.689  10.283 949.269 

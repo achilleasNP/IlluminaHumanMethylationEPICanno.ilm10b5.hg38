@@ -28,13 +28,13 @@ table(substr(dropCpGs, 1,2))
 
 
 ## Manifest package
-IlluminaHumanMethylationEPICB5manifest <- do.call(IlluminaMethylationManifest,
+IlluminaHumanMethylationEPICmanifest <- do.call(IlluminaMethylationManifest,
                                                 list(TypeI = manifestList$TypeI,
                                                      TypeII = manifestList$TypeII,
                                                      TypeControl = manifestList$TypeControl,
                                                      TypeSnpI = manifestList$TypeSnpI,
                                                      TypeSnpII = manifestList$TypeSnpII,
-                                                     annotation = "IlluminaHumanMethylationEPICB5"))
+                                                     annotation = "IlluminaHumanMethylationEPIC"))
 ## Annotation package
 anno$IlmnID <- NULL
 nam <- names(anno)
@@ -47,7 +47,7 @@ nam[c("AddressA_ID", "AddressB_ID", "AlleleA_ProbeSeq", "AlleleB_ProbeSeq",
 names(nam) <- NULL
 names(anno) <- nam
 rownames(anno) <- anno$Name
-anno <- anno[getManifestInfo(IlluminaHumanMethylationEPICB5manifest, type = "locusNames"),]
+anno <- anno[getManifestInfo(IlluminaHumanMethylationEPICmanifest, type = "locusNames"),]
 
 Locations <- anno[, c("CHR", "MAPINFO")]
 names(Locations) <- c("chr", "pos")
@@ -116,7 +116,7 @@ for(nam in annoNames) {
     cat(nam, "\n")
     save(list = nam, file = file.path("../../data", paste(nam, "rda", sep = ".")), compress = "xz")
 }
-annoStr <- c(array = "IlluminaHumanMethylationEPICB5",
+annoStr <- c(array = "IlluminaHumanMethylationEPIC",
              annotation = "ilm10b5",
              genomeBuild = "hg38")
 defaults <- c("Locations", "Manifest", "SNPs.141CommonSingle", "Islands.UCSC", "Other")

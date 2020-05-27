@@ -20,7 +20,7 @@
 }
 \format{
   An object of class \code{IlluminaMethylationAnnotation} for
-  \code{IlluminaHumanMethylationEPICB5anno.ilm10b5.hg38}. All others are of
+  \code{IlluminaHumanMethylationEPICanno.ilm10b5.hg38}. All others are of
   class \code{DataFrame}
 }
 \details{
@@ -43,7 +43,7 @@
 }
 
 \examples{
-data(IlluminaHumanMethylationEPICB5anno.ilm10b5.hg38)
+data(IlluminaHumanMethylationEPICanno.ilm10b5.hg38)
 data(Locations)
 data(Other)
 data(Manifest)

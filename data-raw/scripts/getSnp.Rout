@@ -1669,4 +1669,4 @@ Instantiating object
 > 
 > proc.time()
     user   system  elapsed 
-1538.145   68.130 1615.668 
+1443.565   28.637 1477.301 
