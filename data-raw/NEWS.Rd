@@ -5,6 +5,6 @@
 
 \section{Version 0.0.1}{
   \itemize{
-    \item Created annotation package for  IlluminaHumanMethylationEPICB5manifest modelled on the 1.0b4 annotation package  IlluminaHumanMethylationEPICanno.imn10b4.hg19
+    \item Created annotation package for  IlluminaHumanMethylationEPICmanifest modelled on the 1.0b4 annotation package  IlluminaHumanMethylationEPICanno.imn10b4.hg19
   }
 }
